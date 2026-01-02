@@ -1,0 +1,26 @@
+[build-system]
+requires = ["setuptools>=61.0"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "feedback-mcp"
+version = "1.0.0"
+description = "A multimodal feedback MCP server for AI agents"
+readme = "README.md"
+requires-python = ">=3.10"
+dependencies = [
+    "fastmcp>=2.0",
+    "fastapi",
+    "uvicorn",
+    "plyer",
+    "jinja2",
+    "python-multipart",
+]
+
+[project.scripts]
+feedback-mcp = "server:main"
+
+[tool.setuptools.packages.find]
+where = ["src"]
+include = ["*"]
+

@@ -1,0 +1,193 @@
+"""
+Core module - Database, MCP tool, notifications, and logging.
+"""
+import os
+import sqlite3
+import base64
+import logging
+import platform
+import uuid
+import time
+from typing import Optional, List
+
+from fastmcp import FastMCP
+from fastmcp.utilities.types import Image
+from plyer import notification
+import threading
+
+# --- Test Hooks ---
+class State:
+    def __init__(self):
+        self.current_question = None
+        self.user_answer = None
+        self.answer_event = threading.Event()
+
+state = State()
+
+# --- Paths ---
+BASE_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
+DATA_DIR = os.path.join(BASE_DIR, "data")
+LOG_DIR = os.path.join(BASE_DIR, ".log")
+
+# Configuration from Environment Variables (MCP Client Config)
+DB_PATH = os.getenv("FEEDBACK_DB_PATH", os.path.join(DATA_DIR, "feedback.db"))
+LOG_PATH = os.getenv("FEEDBACK_LOG_PATH", os.path.join(LOG_DIR, "feedback.log"))
+ENABLE_SYSTEM_NOTIFY = os.getenv("FEEDBACK_ENABLE_SYSTEM_NOTIFY", "false").lower() == "true"
+
+# Ensure directories exist
+os.makedirs(os.path.dirname(DB_PATH), exist_ok=True)
+os.makedirs(os.path.dirname(LOG_PATH), exist_ok=True)
+
+# --- Logging ---
+# Create formatter
+log_formatter = logging.Formatter('%(asctime)s - %(name)s - %(levelname)s - %(message)s')
+
+# File handler
+file_handler = logging.FileHandler(LOG_PATH, mode='a', encoding='utf-8')
+file_handler.setFormatter(log_formatter)
+file_handler.setLevel(logging.DEBUG)
+
+# Console handler
+console_handler = logging.StreamHandler()
+console_handler.setFormatter(log_formatter)
+console_handler.setLevel(logging.INFO)
+
+# Configure root logger to INFO to suppress debug noise from libraries
+logging.basicConfig(level=logging.INFO, handlers=[file_handler, console_handler])
+
+# Set our app's logger to DEBUG
+logger = logging.getLogger("feedback_mcp")
+logger.setLevel(logging.DEBUG)
+
+# Silence specific noisy libraries
+logging.getLogger("docket").setLevel(logging.WARNING)
+logging.getLogger("fakeredis").setLevel(logging.WARNING)
+logging.getLogger("httpcore").setLevel(logging.WARNING)
+logging.getLogger("httpx").setLevel(logging.WARNING)
+
+
+
+# --- Database ---
+def init_db():
+    """Initialize the SQLite database."""
+    with sqlite3.connect(DB_PATH) as conn:
+        conn.execute('''
+            CREATE TABLE IF NOT EXISTS feedback_queue (
+                id TEXT PRIMARY KEY,
+                question TEXT NOT NULL,
+                answer TEXT,
+                image TEXT,
+                status TEXT DEFAULT 'PENDING'
+            )
+        ''')
+    logger.info(f"Database initialized at {DB_PATH}")
+
+
+# Initialize database on import
+init_db()
+
+
+# --- Notifications ---
+# --- Notifications ---
+def send_notification(title: str, message: str):
+    """Send a system notification if enabled."""
+    if not ENABLE_SYSTEM_NOTIFY:
+        return
+        
+    try:
+        if platform.system() == "Linux":
+            os.system(f'notify-send "{title}" "{message}"')
+        else:
+            notification.notify(title=title, message=message, timeout=10)
+    except Exception as e:
+        logger.error(f"Failed to send notification: {e}")
+
+
+# --- MCP Server ---
+mcp = FastMCP("Feedback Agent")
+
+
+@mcp.tool
+def ask_user(question: str, timeout: int = 300) -> str | list:
+    """
+    Ask the user a question and wait for their response.
+    
+    The question will be displayed in the Web UI (default: http://localhost:8000).
+    The user can respond with text and/or an image.
+    
+    Args:
+        question: The question to ask the user.
+        timeout: Maximum time to wait for a response (seconds).
+    
+    Returns:
+        The user's response (text, or list with text and image if image provided).
+    """
+    request_id = str(uuid.uuid4())
+    
+    # Store question in database
+    with sqlite3.connect(DB_PATH) as conn:
+        conn.execute(
+            "INSERT INTO feedback_queue (id, question, status) VALUES (?, ?, 'PENDING')",
+            (request_id, question)
+        )
+    
+    logger.info(f"Question stored: {question[:50]}... (ID: {request_id})")
+    # Send System Notification (if enabled)
+    send_notification("AI Collaboration Request", f"[{request_id[:8]}] {question}")
+    
+    # Update state for native testing
+    state.current_question = question
+    state.user_answer = None
+    state.answer_event.clear()
+    
+    # Poll for response
+    start_time = time.time()
+    while time.time() - start_time < timeout:
+        # Native Test Hook: Check if test state was set manually
+        if state.answer_event.is_set():
+            logger.info(f"Native reply detected via state hooks (Test Mode)")
+            res = state.user_answer
+            # Clean up DB for consistency
+            with sqlite3.connect(DB_PATH) as conn:
+                conn.execute("DELETE FROM feedback_queue WHERE id = ?", (request_id,))
+            return res
+
+        with sqlite3.connect(DB_PATH) as conn:
+            cursor = conn.execute(
+                "SELECT answer, image, status FROM feedback_queue WHERE id = ?",
+                (request_id,)
+            )
+            row = cursor.fetchone()
+            
+            if row:
+                answer, image_data, status = row
+                
+                if status == 'DISMISSED':
+                    conn.execute("DELETE FROM feedback_queue WHERE id = ?", (request_id,))
+                    return "User dismissed this request."
+                
+                if status == 'COMPLETED' and answer:
+                    conn.execute("DELETE FROM feedback_queue WHERE id = ?", (request_id,))
+                    logger.info(f"Reply received for {request_id}: text={answer[:30]}..., image={'YES' if image_data else 'NO'}")
+                    
+                    # Return list of content blocks for multimodal response
+                    if image_data and image_data.startswith("data:image"):
+                        try:
+                            header, encoded = image_data.split(",", 1)
+                            img_format = header.split("/")[1].split(";")[0]
+                            img_bytes = base64.b64decode(encoded)
+                            img = Image(data=img_bytes, format=img_format)
+                            return [answer, img.to_image_content()]
+                        except Exception as e:
+                            logger.error(f"Failed to decode image: {e}")
+                            return answer
+                    
+                    return answer
+        
+        time.sleep(1)
+    
+    # Timeout - cleanup
+    with sqlite3.connect(DB_PATH) as conn:
+        conn.execute("DELETE FROM feedback_queue WHERE id = ?", (request_id,))
+    
+    return "Timeout: No response received."

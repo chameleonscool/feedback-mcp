@@ -1,0 +1,22 @@
+# Runtime data
+data/
+.log/
+*.db
+
+# Python
+__pycache__/
+*.py[cod]
+*.egg-info/
+.eggs/
+dist/
+build/
+
+# IDE
+.idea/
+.vscode/
+*.swp
+
+# Logs
+*.log
+*.lock
+.venv/
