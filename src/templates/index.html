@@ -1,10 +1,10 @@
 <!DOCTYPE html>
-<html lang="zh-CN">
+<html lang="en">
 
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>AI 协作反馈中心</title>
+    <title>AI Feedback Center</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <style>
         @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap');
@@ -32,30 +32,34 @@
     <!-- Sidebar -->
     <aside class="w-80 bg-white/80 backdrop-blur-xl border-r border-gray-200 flex flex-col shadow-xl z-10">
         <div class="p-6 border-b border-gray-100">
-            <h1
-                class="text-xl font-bold bg-clip-text text-transparent bg-gradient-to-r from-blue-600 to-indigo-600 flex items-center gap-2">
-                <svg class="w-6 h-6 text-blue-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
-                        d="M8 10h.01M12 10h.01M16 10h.01M9 16H5a2 2 0 01-2-2V6a2 2 0 012-2h14a2 2 0 012 2v8a2 2 0 01-2 2h-5l-5 5v-5z">
-                    </path>
-                </svg>
-                AI 反馈中心
-            </h1>
+            <div class="flex justify-between items-center mb-4">
+                <h1
+                    class="text-xl font-bold bg-clip-text text-transparent bg-gradient-to-r from-blue-600 to-indigo-600 flex items-center gap-2">
+                    <svg class="w-6 h-6 text-blue-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                            d="M8 10h.01M12 10h.01M16 10h.01M9 16H5a2 2 0 01-2-2V6a2 2 0 012-2h14a2 2 0 012 2v8a2 2 0 01-2 2h-5l-5 5v-5z">
+                        </path>
+                    </svg>
+                    <span id="ui-title">AI Feedback</span>
+                </h1>
+                <button onclick="toggleLang()"
+                    class="px-2 py-0.5 text-[10px] font-bold border border-gray-200 rounded hover:bg-gray-50 transition-colors uppercase tracking-wider text-gray-500"
+                    id="lang-btn">
+                    中文
+                </button>
+            </div>
             <div class="flex items-center space-x-2 mt-2">
                 <span class="relative flex h-2.5 w-2.5">
                     <span id="status-ping"
                         class="animate-ping absolute inline-flex h-full w-full rounded-full bg-green-400 opacity-75"></span>
                     <span id="status-dot" class="relative inline-flex rounded-full h-2.5 w-2.5 bg-green-500"></span>
                 </span>
-                <span id="status-text" class="text-xs text-gray-500 font-medium">服务连接正常</span>
+                <span id="status-text" class="text-xs text-gray-500 font-medium">Service Connected</span>
             </div>
         </div>
 
         <div class="flex-1 overflow-y-auto p-3 space-y-2" id="task-list">
             <!-- Task items will be injected here -->
-            <div class="text-center mt-10 text-gray-400 text-sm">
-                <p>暂无待处理任务</p>
-            </div>
         </div>
 
         <div class="p-4 border-t border-gray-100 flex flex-col items-center gap-2">
@@ -66,9 +70,9 @@
                         d="M15 17h5l-1.405-1.405A2.032 2.032 0 0118 14.158V11a6.002 6.002 0 00-4-5.659V5a2 2 0 10-4 0v.341C7.67 6.165 6 8.388 6 11v3.159c0 .538-.214 1.055-.595 1.436L4 17h5m6 0v1a3 3 0 11-6 0v-1m6 0H9">
                     </path>
                 </svg>
-                通知权限: <span id="notify-status">检查中...</span>
+                <span id="ui-notify-label">Notification:</span> <span id="notify-status">Checking...</span>
             </button>
-            <div id="sw-status" class="text-[10px] text-gray-300">SW: 未加载</div>
+            <div id="sw-status" class="text-[10px] text-gray-300">SW: Loading</div>
         </div>
     </aside>
 
@@ -80,48 +84,149 @@
 
         <div class="flex-1 overflow-y-auto p-8 relative z-0 flex items-center justify-center" id="main-view">
             <!-- Detail View will be injected here -->
-            <div id="empty-detail" class="text-center text-gray-400">
-                <svg class="w-24 h-24 mx-auto mb-4 opacity-20" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5"
-                        d="M20 13V6a2 2 0 00-2-2H6a2 2 0 00-2 2v7m16 0v5a2 2 0 01-2 2H6a2 2 0 01-2-2v-5m16 0h-2.586a1 1 0 00-.707.293l-2.414 2.414a1 1 0 01-.707.293h-3.172a1 1 0 01-.707-.293l-2.414-2.414A1 1 0 006.586 13H4">
-                    </path>
-                </svg>
-                <p class="text-lg font-medium">没有选中的任务</p>
-                <p class="text-sm mt-1">请从左侧列表选择一个任务进行回复</p>
-            </div>
         </div>
     </main>
 
     <script>
+        // --- i18n ---
+        const translations = {
+            en: {
+                title: "AI Feedback",
+                status_connected: "Service Connected",
+                status_disconnected: "Disconnected (Retrying...)",
+                no_tasks: "No pending tasks",
+                notify_label: "Notification:",
+                notify_checking: "Checking...",
+                notify_granted: "On",
+                notify_denied: "Off",
+                notify_default: "Request",
+                sw_active: "SW: Active",
+                sw_loading: "SW: Loading",
+                sw_failed: "SW: Failed",
+                all_done: "All tasks completed",
+                wait_ai: "Waiting for AI to ask questions...",
+                no_task_selected: "No task selected",
+                select_task_tip: "Select a task from the list to reply",
+                ticket: "Ticket",
+                just_now: "just now",
+                placeholder: "Enter your reply... (Ctrl+Enter to send)",
+                markdown_tip: "Supports Markdown | ⌘+Enter",
+                upload_img: "Click to upload screenshot",
+                paste_tip: "Or paste image directly",
+                dismiss: "Dismiss",
+                send: "Send Reply",
+                alert_empty: "Please enter content or upload an image",
+                alert_fail: "Send failed",
+                alert_op_fail: "Operation failed",
+                status_pending: "Pending",
+                new_msg_notify: "New AI Question"
+            },
+            zh: {
+                title: "AI 协作反馈中心",
+                status_connected: "服务连接正常",
+                status_disconnected: "连接断开 (重试中...)",
+                no_tasks: "暂无待处理任务",
+                notify_label: "通知权限:",
+                notify_checking: "检查中...",
+                notify_granted: "已开启",
+                notify_denied: "已禁用",
+                notify_default: "点击请求",
+                sw_active: "SW: 已激活",
+                sw_loading: "SW: 未加载",
+                sw_failed: "SW: 失败",
+                all_done: "已完成所有任务",
+                wait_ai: "请等待 AI 发起新的提问...",
+                no_task_selected: "没有选中的任务",
+                select_task_tip: "请从左侧列表选择一个任务进行回复",
+                ticket: "任务",
+                just_now: "刚刚",
+                placeholder: "请输入您的回复... (Ctrl+Enter 发送)",
+                markdown_tip: "支持 Markdown | ⌘+Enter",
+                upload_img: "点击上传截图",
+                paste_tip: "或直接粘贴图片到页面",
+                dismiss: "忽略 (Dismiss)",
+                send: "发送回复",
+                alert_empty: "请输入内容或上传图片",
+                alert_fail: "发送失败",
+                alert_op_fail: "操作失败",
+                status_pending: "处理中",
+                new_msg_notify: "AI 新提问"
+            }
+        };
+
+        let currentLang = localStorage.getItem('lang') || 'en';
+
+        function t(key) {
+            return translations[currentLang][key] || key;
+        }
+
+        function toggleLang() {
+            currentLang = currentLang === 'en' ? 'zh' : 'en';
+            localStorage.setItem('lang', currentLang);
+            applyLang();
+            renderSidebar();
+            renderMain();
+        }
+
+        function applyLang() {
+            document.documentElement.lang = currentLang === 'en' ? 'en' : 'zh-CN';
+            document.title = t('title');
+            document.getElementById('ui-title').innerText = t('title');
+            document.getElementById('ui-notify-label').innerText = t('notify_label');
+            document.getElementById('lang-btn').innerText = currentLang === 'en' ? '中文' : 'English';
+
+            // Update status text based on current state
+            const statusDot = document.getElementById('status-dot');
+            const statusText = document.getElementById('status-text');
+            if (statusDot.classList.contains('bg-green-500')) {
+                statusText.innerText = t('status_connected');
+            } else {
+                statusText.innerText = t('status_disconnected');
+            }
+
+            updateNotifyStatus();
+            updateSWStatus();
+        }
+
         let tasks = [];
         let selectedTaskId = null;
-        let imageCache = {}; // Cache images by task ID to prevent loss on re-render
-        let textCache = {};  // Cache text by task ID to prevent loss on re-render
+        let imageCache = {};
+        let textCache = {};
 
         // --- Notification ---
         function updateNotifyStatus() {
             const status = Notification.permission;
             const el = document.getElementById('notify-status');
-            const btn = document.getElementById('notify-btn');
+            if (!el) return;
 
             if (status === 'granted') {
-                el.innerText = '已开启';
+                el.innerText = t('notify_granted');
                 el.className = 'text-green-500 font-bold';
             } else if (status === 'denied') {
-                el.innerText = '已禁用';
+                el.innerText = t('notify_denied');
                 el.className = 'text-red-500 font-bold';
             } else {
-                el.innerText = '点击请求';
+                el.innerText = t('notify_default');
+                el.className = '';
+            }
+        }
+
+        function updateSWStatus() {
+            const el = document.getElementById('sw-status');
+            if (!el) return;
+            if (swRegistration) {
+                el.innerText = t('sw_active');
+                el.className = 'text-[10px] text-green-400';
+            } else {
+                // If it's already failed, keep failed.
             }
         }
 
         function requestNotificationPermission() {
-            console.log('Requesting notification permission...');
             Notification.requestPermission().then(permission => {
-                console.log('Permission result:', permission);
                 updateNotifyStatus();
                 if (permission === 'granted') {
-                    new Notification("通知演示", { body: "通知功能已成功启用！" });
+                    new Notification(t('title'), { body: t('notify_granted') });
                 }
             });
         }
@@ -130,52 +235,43 @@
         let swRegistration = null;
         if ('serviceWorker' in navigator) {
             navigator.serviceWorker.register('/sw.js').then(reg => {
-                console.log('SW Registered', reg);
                 swRegistration = reg;
-                document.getElementById('sw-status').innerText = 'SW: 已激活';
-                document.getElementById('sw-status').className = 'text-[10px] text-green-400';
+                updateSWStatus();
             }).catch(err => {
-                console.error('SW Register failed', err);
-                document.getElementById('sw-status').innerText = 'SW: 失败';
-                document.getElementById('sw-status').className = 'text-[10px] text-red-400';
+                const el = document.getElementById('sw-status');
+                if (el) {
+                    el.innerText = t('sw_failed');
+                    el.className = 'text-[10px] text-red-400';
+                }
             });
 
             navigator.serviceWorker.addEventListener('message', event => {
-                console.log('Message from SW:', event.data);
                 if (event.data.type === 'SELECT_TASK') {
                     selectTask(event.data.id);
                 }
             });
         }
 
-        updateNotifyStatus();
-
         function sendNotification(id, msg) {
-            console.log('Attempting to send notification:', id, msg);
             if (Notification.permission === "granted") {
                 if (swRegistration) {
-                    console.log('Sending via SW...');
-                    swRegistration.showNotification("AI 新提问", {
+                    swRegistration.showNotification(t('new_msg_notify'), {
                         body: msg,
                         tag: id,
                         icon: '/favicon.ico'
                     });
                 } else {
-                    console.log('Sending via Legacy API...');
-                    const n = new Notification("AI 新提问", {
+                    const n = new Notification(t('new_msg_notify'), {
                         body: msg,
                         tag: id,
                         icon: '/favicon.ico'
                     });
                     n.onclick = function (e) {
-                        console.log('Notification clicked!');
                         e.preventDefault();
                         window.focus();
                         selectTask(id);
                     };
                 }
-            } else {
-                console.warn('Notification permission not granted:', Notification.permission);
             }
         }
 
@@ -185,7 +281,6 @@
                 const response = await fetch('/api/poll');
                 const newTasks = await response.json();
 
-                // Notification check: find newly added tasks
                 const oldIds = new Set(tasks.map(t => t.id));
                 newTasks.forEach(task => {
                     if (!oldIds.has(task.id)) {
@@ -193,14 +288,11 @@
                     }
                 });
 
-                // Diff check: if tasks changed, re-render sidebar
                 const isChanged = JSON.stringify(tasks.map(t => t.id)) !== JSON.stringify(newTasks.map(t => t.id));
-
                 tasks = newTasks;
 
                 if (tasks.length > 0) {
                     if (!selectedTaskId || !tasks.find(t => t.id === selectedTaskId)) {
-                        // Check if we have a hash to deep link
                         const hash = window.location.hash.substring(1);
                         if (hash && tasks.find(t => t.id === hash)) {
                             selectedTaskId = hash;
@@ -220,14 +312,12 @@
                 }
 
                 if (isChanged) renderSidebar();
-
                 document.getElementById('status-dot').classList.replace('bg-red-500', 'bg-green-500');
-                document.getElementById('status-text').innerText = "服务连接正常";
+                document.getElementById('status-text').innerText = t('status_connected');
 
             } catch (e) {
-                console.error(e);
                 document.getElementById('status-dot').classList.replace('bg-green-500', 'bg-red-500');
-                document.getElementById('status-text').innerText = "连接断开 (重试中...)";
+                document.getElementById('status-text').innerText = t('status_disconnected');
             }
         }
 
@@ -235,7 +325,7 @@
             if (selectedTaskId === id) return;
             saveCurrentText();
             selectedTaskId = id;
-            window.location.hash = id; // Update URL for deep linking
+            window.location.hash = id;
             renderSidebar();
             renderMain();
         }
@@ -245,7 +335,7 @@
             const container = document.getElementById('task-list');
 
             if (tasks.length === 0) {
-                container.innerHTML = `<div class="text-center mt-10 text-gray-400 text-sm"><p>暂无待处理任务</p></div>`;
+                container.innerHTML = `<div class="text-center mt-10 text-gray-400 text-sm"><p>${t('no_tasks')}</p></div>`;
                 return;
             }
 
@@ -253,8 +343,8 @@
                 <div onclick="selectTask('${task.id}')" 
                      class="sidebar-item p-4 rounded-xl cursor-pointer transition-all duration-200 hover:bg-white hover:shadow-sm border border-transparent hover:border-gray-100 ${task.id === selectedTaskId ? 'active bg-white shadow-sm ring-1 ring-blue-100' : 'text-gray-600'}">
                     <div class="flex justify-between items-start mb-1">
-                        <span class="text-[10px] font-bold uppercase tracking-wider ${task.id === selectedTaskId ? 'text-blue-600' : 'text-gray-400'}">Ticket #${task.id.substring(0, 6)}</span>
-                        <span class="text-[10px] text-gray-400">刚刚</span>
+                        <span class="text-[10px] font-bold uppercase tracking-wider ${task.id === selectedTaskId ? 'text-blue-600' : 'text-gray-400'}">${t('ticket')} #${task.id.substring(0, 6)}</span>
+                        <span class="text-[10px] text-gray-400">${t('just_now')}</span>
                     </div>
                     <p class="text-sm font-medium line-clamp-2 leading-relaxed ${task.id === selectedTaskId ? 'text-gray-900' : 'text-gray-500'}">
                         ${task.question}
@@ -272,8 +362,8 @@
                         <div class="w-24 h-24 mx-auto mb-6 bg-gray-50 rounded-full flex items-center justify-center">
                             <svg class="w-10 h-10 opacity-30" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M20 13V6a2 2 0 00-2-2H6a2 2 0 00-2 2v7m16 0v5a2 2 0 01-2 2H6a2 2 0 01-2-2v-5m16 0h-2.586a1 1 0 00-.707.293l-2.414 2.414a1 1 0 01-.707.293h-3.172a1 1 0 01-.707-.293l-2.414-2.414A1 1 0 006.586 13H4"></path></svg>
                         </div>
-                        <p class="text-xl font-medium text-gray-500">已完成所有任务</p>
-                        <p class="text-sm mt-2 opacity-60">请等待 AI 发起新的提问...</p>
+                        <p class="text-xl font-medium text-gray-500">${t('all_done')}</p>
+                        <p class="text-sm mt-2 opacity-60">${t('wait_ai')}</p>
                     </div>`;
                 return;
             }
@@ -281,7 +371,6 @@
             const task = tasks.find(t => t.id === selectedTaskId);
             if (!task) return;
 
-            // --- Partial Update Logic ---
             const currentWrapper = container.querySelector('[data-active-task]');
             const isShowingSameTask = currentWrapper && currentWrapper.getAttribute('data-active-task') === selectedTaskId;
 
@@ -290,7 +379,6 @@
             const isImgHidden = cachedImg ? "" : "hidden";
 
             if (isShowingSameTask) {
-                // Surgically update only the image area
                 const previewContainer = document.getElementById('preview-container');
                 const imagePreview = document.getElementById('image-preview');
                 const uploadPlaceholder = document.getElementById('upload-placeholder');
@@ -303,17 +391,15 @@
                     previewContainer.classList.add('hidden');
                     uploadPlaceholder.classList.remove('hidden');
                 }
-                // Do NOT touch the textarea value during image updates unless explicitly needed
                 return;
             }
 
-            // --- Full Render for Task Switch ---
             container.innerHTML = `
                 <div class="w-full max-w-2xl animate-fade-in" data-active-task="${task.id}">
                     <div class="glass rounded-2xl shadow-xl overflow-hidden">
                         <div class="bg-gray-50/50 border-b border-gray-100 p-6">
                             <div class="flex items-center space-x-2 mb-3">
-                                <span class="px-2 py-0.5 rounded text-[10px] font-bold bg-blue-100 text-blue-600 uppercase tracking-wide">Pending</span>
+                                <span class="px-2 py-0.5 rounded text-[10px] font-bold bg-blue-100 text-blue-600 uppercase tracking-wide">${t('status_pending')}</span>
                                 <span class="text-xs text-gray-400 font-mono">ID: ${task.id}</span>
                             </div>
                             <h2 class="text-2xl font-semibold text-gray-800 leading-snug">${task.question}</h2>
@@ -325,8 +411,8 @@
                                     oninput="textCache['${task.id}'] = this.value"
                                     onkeydown="if((event.ctrlKey || event.metaKey) && event.key === 'Enter') { submitTask('${task.id}'); }"
                                     class="w-full h-40 p-4 bg-white border border-gray-200 rounded-xl focus:ring-2 focus:ring-blue-500 focus:border-transparent outline-none transition-all resize-none text-gray-700 placeholder-gray-400 text-base leading-relaxed shadow-sm hover:border-gray-300" 
-                                    placeholder="请输入您的回复... (Ctrl+Enter 发送)" autofocus></textarea>
-                                <div class="absolute bottom-3 right-3 text-xs text-gray-400 pointer-events-none bg-white/80 px-2 py-1 rounded">支持 Markdown | ⌘+Enter</div>
+                                    placeholder="${t('placeholder')}" autofocus></textarea>
+                                <div class="absolute bottom-3 right-3 text-xs text-gray-400 pointer-events-none bg-white/80 px-2 py-1 rounded">${t('markdown_tip')}</div>
                             </div>
 
                             <div class="relative group">
@@ -335,8 +421,8 @@
                                     
                                     <div id="upload-placeholder" class="${cachedImg ? 'hidden' : ''}">
                                         <svg class="w-10 h-10 mx-auto text-gray-300 group-hover:text-blue-500 transition-colors mb-2" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z"></path></svg>
-                                        <p class="text-sm text-gray-500 font-medium group-hover:text-blue-600 transition-colors">点击上传截图</p>
-                                        <p class="text-xs text-gray-400 mt-1">或直接粘贴图片到页面</p>
+                                        <p class="text-sm text-gray-500 font-medium group-hover:text-blue-600 transition-colors">${t('upload_img')}</p>
+                                        <p class="text-xs text-gray-400 mt-1">${t('paste_tip')}</p>
                                     </div>
 
                                     <div id="preview-container" class="relative inline-block ${isImgHidden}">
@@ -350,10 +436,10 @@
 
                             <div class="flex items-center space-x-4 pt-4 border-t border-gray-100">
                                 <button onclick="dismissTask('${task.id}')" class="px-6 py-3 text-gray-500 hover:text-red-600 hover:bg-red-50 font-medium rounded-xl transition-all duration-200 text-sm">
-                                    忽略 (Dismiss)
+                                    ${t('dismiss')}
                                 </button>
                                 <button onclick="submitTask('${task.id}')" class="flex-1 px-8 py-3 bg-gradient-to-r from-blue-600 to-indigo-600 hover:from-blue-700 hover:to-indigo-700 text-white font-bold rounded-xl shadow-lg shadow-blue-500/30 transition-all duration-200 transform hover:-translate-y-0.5 focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 flex justify-center items-center gap-2 text-sm">
-                                    <span>发送回复</span>
+                                    <span>${t('send')}</span>
                                     <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M14 5l7 7m0 0l-7 7m7-7H3"></path></svg>
                                 </button>
                             </div>
@@ -363,7 +449,6 @@
                 </div>
             `;
 
-            // Restoration of text value
             document.getElementById('answer-input').value = currentText;
 
             document.onpaste = (e) => {
@@ -384,14 +469,12 @@
             }
         }
 
-        // --- handlers ---
         function handleImage(file) {
             if (!selectedTaskId || !file) return;
             saveCurrentText();
             const reader = new FileReader();
             reader.onload = (e) => {
-                const src = e.target.result;
-                imageCache[selectedTaskId] = src;
+                imageCache[selectedTaskId] = e.target.result;
                 renderMain();
             };
             reader.readAsDataURL(file);
@@ -404,14 +487,13 @@
             renderMain();
         }
 
-
         async function submitTask(id) {
-            saveCurrentText(); // Ensure latest state is captured
+            saveCurrentText();
             const answer = textCache[id] !== undefined ? textCache[id] : "";
             const img = imageCache[id];
 
             if (!answer && !img) {
-                alert("请输入内容或上传图片");
+                alert(t('alert_empty'));
                 return;
             }
 
@@ -419,37 +501,23 @@
                 await fetch('/api/reply', {
                     method: 'POST',
                     headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify({
-                        id: id,
-                        answer: answer,
-                        image: img || null
-                    })
+                    body: JSON.stringify({ id, answer, image: img || null })
                 });
-                // Optimistic UI update
                 tasks = tasks.filter(t => t.id !== id);
                 delete imageCache[id];
                 delete textCache[id];
-
-                // If current was selected, clear selection (poll will fix auto-select next)
                 if (selectedTaskId === id) selectedTaskId = null;
-
                 renderSidebar();
                 renderMain();
-
             } catch (e) {
-                console.error(e);
-                alert("发送失败");
+                alert(t('alert_fail'));
             }
         }
 
         async function dismissTask(id) {
-            // Optimistic UI update immediately
             const oldTasks = [...tasks];
             tasks = tasks.filter(t => t.id !== id);
-
-            if (selectedTaskId === id) {
-                selectedTaskId = tasks.length > 0 ? tasks[0].id : null;
-            }
+            if (selectedTaskId === id) selectedTaskId = tasks.length > 0 ? tasks[0].id : null;
             renderSidebar();
             renderMain();
 
@@ -458,14 +526,13 @@
                 delete imageCache[id];
                 delete textCache[id];
             } catch (e) {
-                console.error(e);
-                alert("操作失败");
-                // Revert
+                alert(t('alert_op_fail'));
                 tasks = oldTasks;
                 renderSidebar();
             }
         }
 
+        applyLang();
         setInterval(poll, 1500);
         poll();
     </script>
@@ -486,7 +553,6 @@
             }
         }
 
-        /* Custom scrollbar */
         ::-webkit-scrollbar {
             width: 6px;
         }
