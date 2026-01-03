@@ -2,12 +2,15 @@
 Core module - Database, MCP tool, notifications, and logging.
 """
 import os
+import sys
 import sqlite3
 import base64
 import logging
 import platform
 import uuid
 import time
+import traceback
+import atexit
 from typing import Optional, List
 
 from fastmcp import FastMCP
@@ -32,15 +35,19 @@ LOG_DIR = os.path.join(BASE_DIR, ".log")
 # Configuration from Environment Variables (MCP Client Config)
 DB_PATH = os.getenv("FEEDBACK_DB_PATH", os.path.join(DATA_DIR, "feedback.db"))
 LOG_PATH = os.getenv("FEEDBACK_LOG_PATH", os.path.join(LOG_DIR, "feedback.log"))
+FATAL_LOG_PATH = os.path.join(LOG_DIR, "fatal.log")
 ENABLE_SYSTEM_NOTIFY = os.getenv("FEEDBACK_ENABLE_SYSTEM_NOTIFY", "false").lower() == "true"
 
 # Ensure directories exist
 os.makedirs(os.path.dirname(DB_PATH), exist_ok=True)
 os.makedirs(os.path.dirname(LOG_PATH), exist_ok=True)
 
+# Get current process ID
+PID = os.getpid()
+
 # --- Logging ---
-# Create formatter
-log_formatter = logging.Formatter('%(asctime)s - %(name)s - %(levelname)s - %(message)s')
+# Create formatter with process ID
+log_formatter = logging.Formatter(f'%(asctime)s - [PID:{PID}] - %(name)s - %(levelname)s - %(message)s')
 
 # File handler
 file_handler = logging.FileHandler(LOG_PATH, mode='a', encoding='utf-8')
@@ -64,6 +71,54 @@ logging.getLogger("docket").setLevel(logging.WARNING)
 logging.getLogger("fakeredis").setLevel(logging.WARNING)
 logging.getLogger("httpcore").setLevel(logging.WARNING)
 logging.getLogger("httpx").setLevel(logging.WARNING)
+
+
+# --- Fatal Error Handler ---
+def log_fatal_error(exc_type, exc_value, exc_traceback):
+    """Log unhandled exceptions to fatal.log."""
+    if issubclass(exc_type, KeyboardInterrupt):
+        # Don't log keyboard interrupts as fatal errors
+        sys.__excepthook__(exc_type, exc_value, exc_traceback)
+        return
+    
+    error_msg = ''.join(traceback.format_exception(exc_type, exc_value, exc_traceback))
+    timestamp = time.strftime('%Y-%m-%d %H:%M:%S')
+    
+    fatal_entry = f"""
+{'='*60}
+FATAL ERROR at {timestamp} [PID:{PID}]
+{'='*60}
+{error_msg}
+{'='*60}
+"""
+    
+    # Write to fatal.log
+    try:
+        with open(FATAL_LOG_PATH, 'a', encoding='utf-8') as f:
+            f.write(fatal_entry)
+    except Exception:
+        pass  # Can't log the logging error
+    
+    # Also log to regular logger
+    logger.critical(f"FATAL ERROR: {exc_type.__name__}: {exc_value}")
+    logger.critical(f"See {FATAL_LOG_PATH} for full traceback")
+    
+    # Call the original exception hook
+    sys.__excepthook__(exc_type, exc_value, exc_traceback)
+
+
+# Install the exception handler
+sys.excepthook = log_fatal_error
+
+
+# --- Exit Handler ---
+def log_exit():
+    """Log process exit."""
+    logger.info(f"Process exiting [PID:{PID}]")
+
+
+# Register exit handler
+atexit.register(log_exit)
 
 
 
