@@ -2,12 +2,14 @@ import asyncio
 import logging
 import sys
 import os
+import pytest
 from fastmcp import Client
 
 # Configure logging to see what's happening
 logging.basicConfig(level=logging.INFO)
 logger = logging.getLogger("test_sse")
 
+@pytest.mark.asyncio
 async def test_sse_integration():
     """
     Tests the SSE connection to the running Feedback MCP server.

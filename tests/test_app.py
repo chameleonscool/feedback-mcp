@@ -1,6 +1,7 @@
 import asyncio
 import threading
 import time
+import pytest
 from fastapi.testclient import TestClient
 from web import app
 from core import state, ask_user
@@ -27,6 +28,7 @@ def user_reply_simulator():
         })
         print(f"[Simulator] Reply status: {reply_response.json()}")
 
+@pytest.mark.asyncio
 async def test_ask_user_flow():
     print("--- Starting Test Flow ---")
     
