@@ -89,6 +89,8 @@ cd src && python server.py --mode stdio
 
 ## ⚙️ 配置选项
 
+### 环境变量
+
 您可以通过环境变量在 MCP 客户端中配置服务器：
 
 | 变量名 | 说明 | 默认值 |
@@ -98,6 +100,22 @@ cd src && python server.py --mode stdio
 | `FEEDBACK_WEB_HOST` | Web 服务器监听地址 | `0.0.0.0` |
 | `FEEDBACK_ENABLE_SYSTEM_NOTIFY` | 是否启用系统级原生通知 (notify-send/plyer) | `false` |
 | `FEEDBACK_LOG_PATH` | 日志文件路径 | `.log/feedback.log` |
+| `FEEDBACK_TIMEOUT` | 用户响应的默认超时时间（秒） | `3000`（50 分钟） |
+
+自定义超时时间的 MCP 客户端配置示例：
+```json
+{
+  "mcpServers": {
+    "feedback": {
+      "command": "uv",
+      "args": ["run", "python", "/path/to/server.py", "--mode", "stdio"],
+      "env": {
+        "FEEDBACK_TIMEOUT": "600"
+      }
+    }
+  }
+}
+```
 
 ## 🧪 测试
 

@@ -37,6 +37,7 @@ DB_PATH = os.getenv("FEEDBACK_DB_PATH", os.path.join(DATA_DIR, "feedback.db"))
 LOG_PATH = os.getenv("FEEDBACK_LOG_PATH", os.path.join(LOG_DIR, "feedback.log"))
 FATAL_LOG_PATH = os.path.join(LOG_DIR, "fatal.log")
 ENABLE_SYSTEM_NOTIFY = os.getenv("FEEDBACK_ENABLE_SYSTEM_NOTIFY", "false").lower() == "true"
+DEFAULT_TIMEOUT = int(os.getenv("FEEDBACK_TIMEOUT", "3000"))
 
 # Ensure directories exist
 os.makedirs(os.path.dirname(DB_PATH), exist_ok=True)
@@ -163,7 +164,7 @@ mcp = FastMCP("Feedback Agent")
 
 
 @mcp.tool
-def ask_user(question: str, timeout: int = 300) -> str | list:
+def ask_user(question: str, timeout: int = DEFAULT_TIMEOUT) -> str | list:
     """
     Ask the user a question and wait for their response.
     

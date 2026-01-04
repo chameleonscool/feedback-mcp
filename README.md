@@ -89,6 +89,8 @@ Visit `http://localhost:8000` to view the Web interface.
 
 ## ⚙️ Configuration Options
 
+### Environment Variables
+
 You can configure the server via environment variables in your MCP client:
 
 | Variable | Description | Default |
@@ -98,6 +100,22 @@ You can configure the server via environment variables in your MCP client:
 | `FEEDBACK_WEB_HOST` | Web server listen address | `0.0.0.0` |
 | `FEEDBACK_ENABLE_SYSTEM_NOTIFY` | Enable native system notifications (notify-send/plyer) | `false` |
 | `FEEDBACK_LOG_PATH` | Path to log file | `.log/feedback.log` |
+| `FEEDBACK_TIMEOUT` | Default timeout for user responses (seconds) | `3000` (50 minutes) |
+
+Example MCP client configuration with custom timeout:
+```json
+{
+  "mcpServers": {
+    "feedback": {
+      "command": "uv",
+      "args": ["run", "python", "/path/to/server.py", "--mode", "stdio"],
+      "env": {
+        "FEEDBACK_TIMEOUT": "600"
+      }
+    }
+  }
+}
+```
 
 ## 🧪 Testing
 
