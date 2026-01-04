@@ -148,7 +148,7 @@
             class="absolute inset-0 bg-gradient-to-tr from-blue-50/50 via-white/30 to-purple-50/50 pointer-events-none">
         </div>
 
-        <div class="flex-1 overflow-y-auto p-8 relative z-0 flex items-center justify-center" id="main-view">
+        <div class="flex-1 overflow-y-auto p-8 relative z-0 flex items-start justify-center" id="main-view">
             <!-- Detail View will be injected here -->
         </div>
     </main>
@@ -516,6 +516,9 @@
             `;
 
             document.getElementById('answer-input').value = currentText;
+            
+            // Scroll to top when switching tasks
+            container.scrollTop = 0;
 
             document.onpaste = (e) => {
                 const items = (e.clipboardData || e.originalEvent.clipboardData).items;
