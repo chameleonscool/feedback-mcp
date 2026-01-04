@@ -4,6 +4,7 @@ Server module - Unified entry point for SSE and STDIO modes.
 import argparse
 import logging
 import os
+import sys
 import threading
 import time
 
@@ -72,7 +73,40 @@ def main():
         logger.info("MCP STDIO transport ready, waiting for client connection...")
         
         # Run MCP in STDIO mode (blocking)
-        mcp.run()
+        # Handle client disconnection gracefully
+        try:
+            mcp.run()
+        except (BrokenPipeError, ConnectionResetError, EOFError):
+            # Client closed the connection - normal shutdown
+            logger.info("Client disconnected gracefully")
+            sys.exit(0)
+        except BaseException as e:
+            # Handle ExceptionGroup from anyio TaskGroup
+            if _is_client_disconnect_error(e):
+                logger.info("Client disconnected gracefully")
+                sys.exit(0)
+            else:
+                # Re-raise if it's not a connection error
+                raise
+
+
+def _is_client_disconnect_error(exc: BaseException) -> bool:
+    """Check if the exception is a client disconnection error."""
+    # Direct connection errors
+    if isinstance(exc, (BrokenPipeError, ConnectionResetError, EOFError)):
+        return True
+    
+    # Check by class name for anyio errors (avoid import dependency)
+    exc_type_name = type(exc).__name__
+    if exc_type_name == "BrokenResourceError":
+        return True
+    
+    # Handle ExceptionGroup / BaseExceptionGroup
+    if isinstance(exc, BaseException) and hasattr(exc, 'exceptions'):
+        # It's an exception group - check all sub-exceptions
+        return all(_is_client_disconnect_error(sub_exc) for sub_exc in exc.exceptions)
+    
+    return False
 
 
 if __name__ == "__main__":
