@@ -103,3 +103,30 @@ async def delete_request(request_id: str):
             (request_id,)
         )
     return {"status": "dismissed"}
+
+
+@app.delete("/api/history/{history_id}")
+async def delete_history_item(history_id: str):
+    """Deletes a specific history item."""
+    with sqlite3.connect(DB_PATH) as conn:
+        conn.execute(
+            "DELETE FROM feedback_queue WHERE id = ? AND status = 'COMPLETED'",
+            (history_id,)
+        )
+    return {"status": "deleted"}
+
+
+class DeleteHistoryModel(BaseModel):
+    ids: list[str]
+
+
+@app.post("/api/history/delete")
+async def delete_history_batch(data: DeleteHistoryModel):
+    """Deletes multiple history items."""
+    with sqlite3.connect(DB_PATH) as conn:
+        placeholders = ','.join(['?' for _ in data.ids])
+        conn.execute(
+            f"DELETE FROM feedback_queue WHERE id IN ({placeholders}) AND status = 'COMPLETED'",
+            data.ids
+        )
+    return {"status": "deleted", "count": len(data.ids)}

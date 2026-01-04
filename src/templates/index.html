@@ -134,9 +134,17 @@
             <div id="history-section" class="hidden mt-4 pt-4 border-t border-gray-200">
                 <div class="flex items-center justify-between mb-2 px-1">
                     <span id="history-title" class="text-xs font-semibold text-gray-400 uppercase tracking-wider">History</span>
-                    <button onclick="toggleHistory()" class="text-[10px] text-gray-400 hover:text-blue-500" id="toggle-history-btn">
-                        <span id="history-toggle-text">Hide</span>
-                    </button>
+                    <div class="flex items-center gap-2">
+                        <button onclick="toggleSelectAll()" class="text-[10px] text-gray-400 hover:text-blue-500 hidden" id="select-all-btn">
+                            <span id="select-all-text">All</span>
+                        </button>
+                        <button onclick="deleteSelectedHistory()" class="text-[10px] text-red-400 hover:text-red-600 hidden" id="delete-history-btn">
+                            <span id="delete-btn-text">Delete</span>
+                        </button>
+                        <button onclick="toggleHistory()" class="text-[10px] text-gray-400 hover:text-blue-500" id="toggle-history-btn">
+                            <span id="history-toggle-text">Hide</span>
+                        </button>
+                    </div>
                 </div>
                 <div id="history-list" class="space-y-2">
                     <!-- History items will be injected here -->
@@ -205,7 +213,10 @@
                 history: "History",
                 history_hide: "Hide",
                 history_show: "Show",
-                completed: "Completed"
+                completed: "Completed",
+                delete_selected: "Delete",
+                select_all: "All",
+                deselect_all: "None"
             },
             zh: {
                 title: "AI 协作反馈中心",
@@ -240,7 +251,10 @@
                 history: "历史记录",
                 history_hide: "隐藏",
                 history_show: "显示",
-                completed: "已完成"
+                completed: "已完成",
+                delete_selected: "删除",
+                select_all: "全选",
+                deselect_all: "取消"
             }
         };
 
@@ -285,6 +299,7 @@
         let selectedHistoryId = null;
         let imageCache = {};
         let textCache = {};
+        let selectedHistoryIds = new Set();  // For multi-select delete
 
         // --- Notification ---
         function updateNotifyStatus() {
@@ -493,15 +508,34 @@
             const container = document.getElementById('history-list');
             const titleEl = document.getElementById('history-title');
             const toggleText = document.getElementById('history-toggle-text');
+            const deleteBtn = document.getElementById('delete-history-btn');
+            const selectAllBtn = document.getElementById('select-all-btn');
+            const selectAllText = document.getElementById('select-all-text');
+            const deleteBtnText = document.getElementById('delete-btn-text');
 
             if (history.length === 0) {
                 section.classList.add('hidden');
+                selectedHistoryIds.clear();
                 return;
             }
 
             section.classList.remove('hidden');
             titleEl.innerText = t('history');
             toggleText.innerText = historyVisible ? t('history_hide') : t('history_show');
+            
+            // Update delete button visibility and text
+            if (selectedHistoryIds.size > 0) {
+                deleteBtn.classList.remove('hidden');
+                selectAllBtn.classList.remove('hidden');
+                deleteBtnText.innerText = `${t('delete_selected')} (${selectedHistoryIds.size})`;
+            } else {
+                deleteBtn.classList.add('hidden');
+                selectAllBtn.classList.add('hidden');
+            }
+            
+            // Update select all button text
+            const allSelected = history.length > 0 && selectedHistoryIds.size === history.length;
+            selectAllText.innerText = allSelected ? t('deselect_all') : t('select_all');
             
             if (!historyVisible) {
                 container.classList.add('hidden');
@@ -510,17 +544,69 @@
             }
 
             container.innerHTML = history.map(item => `
-                <div onclick="selectHistoryItem('${item.id}')" 
-                     class="sidebar-item p-3 rounded-lg cursor-pointer transition-all duration-200 hover:bg-gray-50 border border-transparent hover:border-gray-100 ${item.id === selectedHistoryId ? 'bg-gray-50 ring-1 ring-gray-200' : 'text-gray-500 opacity-70'}">
-                    <div class="flex justify-between items-start mb-1">
-                        <span class="text-[10px] font-medium uppercase tracking-wider text-green-600">✓ ${t('completed')}</span>
-                        <span class="text-[10px] text-gray-400">${formatTime(item.completed_at)}</span>
+                <div class="sidebar-item p-3 rounded-lg cursor-pointer transition-all duration-200 hover:bg-gray-50 border border-transparent hover:border-gray-100 ${item.id === selectedHistoryId ? 'bg-gray-50 ring-1 ring-gray-200' : 'text-gray-500 opacity-70'} flex items-start gap-2">
+                    <input type="checkbox" 
+                           onclick="event.stopPropagation(); toggleHistorySelection('${item.id}')" 
+                           ${selectedHistoryIds.has(item.id) ? 'checked' : ''}
+                           class="mt-1 w-3 h-3 rounded border-gray-300 text-blue-500 focus:ring-blue-500 cursor-pointer flex-shrink-0">
+                    <div onclick="selectHistoryItem('${item.id}')" class="flex-1 min-w-0">
+                        <div class="flex justify-between items-start mb-1">
+                            <span class="text-[10px] font-medium uppercase tracking-wider text-green-600">✓ ${t('completed')}</span>
+                            <span class="text-[10px] text-gray-400">${formatTime(item.completed_at)}</span>
+                        </div>
+                        <p class="text-xs line-clamp-2 leading-relaxed text-gray-500">
+                            ${item.question.substring(0, 80)}${item.question.length > 80 ? '...' : ''}
+                        </p>
                     </div>
-                    <p class="text-xs line-clamp-2 leading-relaxed text-gray-500">
-                        ${item.question.substring(0, 80)}${item.question.length > 80 ? '...' : ''}
-                    </p>
                 </div>
             `).join('');
+        }
+        
+        function toggleHistorySelection(id) {
+            if (selectedHistoryIds.has(id)) {
+                selectedHistoryIds.delete(id);
+            } else {
+                selectedHistoryIds.add(id);
+            }
+            renderHistory();
+        }
+        
+        function toggleSelectAll() {
+            const allSelected = history.length > 0 && selectedHistoryIds.size === history.length;
+            if (allSelected) {
+                selectedHistoryIds.clear();
+            } else {
+                history.forEach(item => selectedHistoryIds.add(item.id));
+            }
+            renderHistory();
+        }
+        
+        async function deleteSelectedHistory() {
+            if (selectedHistoryIds.size === 0) return;
+            
+            const idsToDelete = Array.from(selectedHistoryIds);
+            
+            try {
+                await fetch('/api/history/delete', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ ids: idsToDelete })
+                });
+                
+                // Remove deleted items from local state
+                history = history.filter(h => !selectedHistoryIds.has(h.id));
+                
+                // Clear selection if viewing a deleted item
+                if (selectedHistoryId && selectedHistoryIds.has(selectedHistoryId)) {
+                    selectedHistoryId = null;
+                    renderMain();
+                }
+                
+                selectedHistoryIds.clear();
+                renderHistory();
+            } catch (e) {
+                alert(t('alert_op_fail'));
+            }
         }
 
         function formatTime(timestamp) {
