@@ -389,12 +389,16 @@
                         const hash = window.location.hash.substring(1);
                         if (hash && tasks.find(t => t.id === hash)) {
                             selectedTaskId = hash;
+                            selectedHistoryId = null;  // Clear history selection when auto-selecting task
                         } else {
-                            if (!selectedTaskId) {
+                            if (!selectedTaskId && !selectedHistoryId) {
+                                // Only auto-select first task if no history is selected
                                 selectedTaskId = tasks[0].id;
                             }
                         }
-                        renderMain();
+                        if (selectedTaskId && !selectedHistoryId) {
+                            renderMain();
+                        }
                     }
                 } else {
                     if (selectedTaskId !== null) {

@@ -190,7 +190,7 @@ mcp = FastMCP("Feedback Agent")
 
 
 @mcp.tool
-def ask_user(question: str, timeout: int = DEFAULT_TIMEOUT) -> str | list:
+def ask_user(question: str) -> str | list:
     """
     Ask the user a question and wait for their response.
     
@@ -199,11 +199,11 @@ def ask_user(question: str, timeout: int = DEFAULT_TIMEOUT) -> str | list:
     
     Args:
         question: The question to ask the user.
-        timeout: Maximum time to wait for a response (seconds).
     
     Returns:
         The user's response (text, or list with text and image if image provided).
     """
+    timeout = DEFAULT_TIMEOUT
     request_id = str(uuid.uuid4())
     
     # Store question in database
