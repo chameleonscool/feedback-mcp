@@ -101,6 +101,7 @@ cd src && python server.py --mode stdio
 | `FEEDBACK_ENABLE_SYSTEM_NOTIFY` | 是否启用系统级原生通知 (notify-send/plyer) | `false` |
 | `FEEDBACK_LOG_PATH` | 日志文件路径 | `.log/feedback.log` |
 | `FEEDBACK_TIMEOUT` | 用户响应的默认超时时间（秒） | `3000`（50 分钟） |
+| `FEEDBACK_HISTORY_DAYS` | 已完成反馈的历史记录保存天数 | `3` |
 
 自定义超时时间的 MCP 客户端配置示例：
 ```json

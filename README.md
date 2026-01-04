@@ -101,6 +101,7 @@ You can configure the server via environment variables in your MCP client:
 | `FEEDBACK_ENABLE_SYSTEM_NOTIFY` | Enable native system notifications (notify-send/plyer) | `false` |
 | `FEEDBACK_LOG_PATH` | Path to log file | `.log/feedback.log` |
 | `FEEDBACK_TIMEOUT` | Default timeout for user responses (seconds) | `3000` (50 minutes) |
+| `FEEDBACK_HISTORY_DAYS` | Number of days to keep completed feedback history | `3` |
 
 Example MCP client configuration with custom timeout:
 ```json

@@ -65,10 +65,33 @@ async def receive_reply(reply: ReplyModel):
     
     with sqlite3.connect(DB_PATH) as conn:
         conn.execute(
-            "UPDATE feedback_queue SET answer = ?, image = ?, status = 'COMPLETED' WHERE id = ?",
+            "UPDATE feedback_queue SET answer = ?, image = ?, status = 'COMPLETED', completed_at = CURRENT_TIMESTAMP WHERE id = ?",
             (reply.answer, reply.image, reply.id)
         )
     return {"status": "success"}
+
+
+@app.get("/api/history")
+async def get_history():
+    """Returns list of completed questions (history)."""
+    with sqlite3.connect(DB_PATH) as conn:
+        cursor = conn.execute(
+            """SELECT id, question, answer, completed_at 
+               FROM feedback_queue 
+               WHERE status = 'COMPLETED' 
+               ORDER BY completed_at DESC
+               LIMIT 50"""
+        )
+        rows = cursor.fetchall()
+    return [
+        {
+            "id": row[0], 
+            "question": row[1], 
+            "answer": row[2],
+            "completed_at": row[3]
+        } 
+        for row in rows
+    ]
 
 
 @app.delete("/api/request/{request_id}")

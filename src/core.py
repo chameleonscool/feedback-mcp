@@ -38,6 +38,8 @@ LOG_PATH = os.getenv("FEEDBACK_LOG_PATH", os.path.join(LOG_DIR, "feedback.log"))
 FATAL_LOG_PATH = os.path.join(LOG_DIR, "fatal.log")
 ENABLE_SYSTEM_NOTIFY = os.getenv("FEEDBACK_ENABLE_SYSTEM_NOTIFY", "false").lower() == "true"
 DEFAULT_TIMEOUT = int(os.getenv("FEEDBACK_TIMEOUT", "3000"))
+# History retention in days (0 = don't keep history)
+HISTORY_RETENTION_DAYS = int(os.getenv("FEEDBACK_HISTORY_DAYS", "3"))
 
 # Ensure directories exist
 os.makedirs(os.path.dirname(DB_PATH), exist_ok=True)
@@ -127,16 +129,40 @@ atexit.register(log_exit)
 def init_db():
     """Initialize the SQLite database."""
     with sqlite3.connect(DB_PATH) as conn:
+        # Create table if not exists
         conn.execute('''
             CREATE TABLE IF NOT EXISTS feedback_queue (
                 id TEXT PRIMARY KEY,
                 question TEXT NOT NULL,
                 answer TEXT,
                 image TEXT,
-                status TEXT DEFAULT 'PENDING'
+                status TEXT DEFAULT 'PENDING',
+                created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+                completed_at TIMESTAMP
             )
         ''')
+        # Add columns if they don't exist (for migration)
+        try:
+            conn.execute('ALTER TABLE feedback_queue ADD COLUMN created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP')
+        except sqlite3.OperationalError:
+            pass  # Column already exists
+        try:
+            conn.execute('ALTER TABLE feedback_queue ADD COLUMN completed_at TIMESTAMP')
+        except sqlite3.OperationalError:
+            pass  # Column already exists
     logger.info(f"Database initialized at {DB_PATH}")
+
+
+def cleanup_old_history():
+    """Remove history records older than HISTORY_RETENTION_DAYS."""
+    if HISTORY_RETENTION_DAYS <= 0:
+        return
+    with sqlite3.connect(DB_PATH) as conn:
+        conn.execute('''
+            DELETE FROM feedback_queue 
+            WHERE status = 'COMPLETED' 
+            AND completed_at < datetime('now', ?)
+        ''', (f'-{HISTORY_RETENTION_DAYS} days',))
 
 
 # Initialize database on import
@@ -219,12 +245,15 @@ def ask_user(question: str, timeout: int = DEFAULT_TIMEOUT) -> str | list:
                 answer, image_data, status = row
                 
                 if status == 'DISMISSED':
+                    # Dismissed records are deleted immediately (not kept in history)
                     conn.execute("DELETE FROM feedback_queue WHERE id = ?", (request_id,))
                     return "User dismissed this request."
                 
                 if status == 'COMPLETED' and answer:
-                    conn.execute("DELETE FROM feedback_queue WHERE id = ?", (request_id,))
+                    # Keep completed records for history (cleanup_old_history will remove old ones)
                     logger.info(f"Reply received for {request_id}: text={answer[:30]}..., image={'YES' if image_data else 'NO'}")
+                    # Cleanup old history periodically
+                    cleanup_old_history()
                     
                     # Return list of content blocks for multimodal response
                     if image_data and image_data.startswith("data:image"):
