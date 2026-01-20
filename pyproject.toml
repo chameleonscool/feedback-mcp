@@ -3,13 +3,13 @@ requires = ["setuptools>=61.0"]
 build-backend = "setuptools.build_meta"
 
 [project]
-name = "feedback-mcp"
+name = "user-intent-mcp"
 version = "1.0.0"
-description = "A multimodal feedback MCP server for AI agents"
+description = "A multimodal user intent collection MCP server for AI agents"
 readme = "README.md"
 requires-python = ">=3.10"
 dependencies = [
-    "fastmcp>=2.0",
+    "fastmcp>=2.12",
     "fastapi",
     "uvicorn",
     "plyer",
@@ -18,7 +18,7 @@ dependencies = [
 ]
 
 [project.scripts]
-feedback-mcp = "server:main"
+user-intent-mcp = "server:main"
 
 [tool.setuptools.packages.find]
 where = ["src"]

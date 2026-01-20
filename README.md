@@ -1,12 +1,12 @@
-# Feedback MCP
+# User Intent MCP
 
-A Model Context Protocol (MCP) server with multimodal feedback support, allowing AI agents to ask users questions and receive text and image responses.
+A Model Context Protocol (MCP) server with multimodal user intent collection support, allowing AI agents to ask users questions and receive text and image responses.
 
 ## ✨ Features
 
 - **Multi-task Parallelism**: Supports multiple agents initiating requests simultaneously.
 - **Task Management**: Users can manually dismiss/ignore requests.
-- **Multimodal Feedback**: Supports uploading or pasting screenshots.
+- **Multimodal Input**: Supports uploading or pasting screenshots.
 - **Dual Transport Modes**: Supports both SSE (HTTP) and STDIO modes.
 - **System Notifications**: Automatic browser notifications for new questions.
 - **Persistence**: Uses SQLite to ensure task state reliability.
@@ -15,7 +15,7 @@ A Model Context Protocol (MCP) server with multimodal feedback support, allowing
 ## 📁 Project Structure
 
 ```
-feedback/
+user-intent-mcp/
 ├── src/                      # Source code
 │   ├── core.py               # Core logic (Database, MCP tools)
 │   ├── web.py                # FastAPI routes
@@ -23,9 +23,9 @@ feedback/
 │   ├── static/               # Static assets (Service Worker)
 │   └── templates/index.html  # Web UI
 ├── data/                     # Runtime data
-│   └── feedback.db           # SQLite database
+│   └── intent.db             # SQLite database
 ├── .log/                     # Logs
-│   └── feedback.log          # Log file
+│   └── intent.log            # Log file
 └── tests/                    # Test cases
 ```
 
@@ -34,7 +34,7 @@ feedback/
 ### Installation
 
 ```bash
-cd feedback
+cd user-intent-mcp
 pip install -e .
 # Or using uv
 uv pip install -e .
@@ -62,7 +62,7 @@ Visit `http://localhost:8000` to view the Web interface.
 ```json
 {
   "mcpServers": {
-    "feedback": {
+    "user-intent": {
       "url": "http://localhost:8000/mcp/sse"
     }
   }
@@ -73,12 +73,12 @@ Visit `http://localhost:8000` to view the Web interface.
 ```json
 {
   "mcpServers": {
-    "feedback": {
+    "user-intent": {
       "command": "uv",
       "args": [
         "run", 
         "python", 
-        "/absolute/path/to/feedback/src/server.py", 
+        "/absolute/path/to/user-intent-mcp/src/server.py", 
         "--mode", 
         "stdio"
       ]
@@ -95,23 +95,23 @@ You can configure the server via environment variables in your MCP client:
 
 | Variable | Description | Default |
 | :--- | :--- | :--- |
-| `FEEDBACK_DB_PATH` | Path to SQLite database file | `data/feedback.db` |
-| `FEEDBACK_WEB_PORT` | Web server port | `8000` |
-| `FEEDBACK_WEB_HOST` | Web server listen address | `0.0.0.0` |
-| `FEEDBACK_ENABLE_SYSTEM_NOTIFY` | Enable native system notifications (notify-send/plyer) | `false` |
-| `FEEDBACK_LOG_PATH` | Path to log file | `.log/feedback.log` |
-| `FEEDBACK_TIMEOUT` | Default timeout for user responses (seconds) | `3000` (50 minutes) |
-| `FEEDBACK_HISTORY_DAYS` | Number of days to keep completed feedback history | `3` |
+| `USERINTENT_DB_PATH` | Path to SQLite database file | `data/intent.db` |
+| `USERINTENT_WEB_PORT` | Web server port | `8000` |
+| `USERINTENT_WEB_HOST` | Web server listen address | `0.0.0.0` |
+| `USERINTENT_ENABLE_SYSTEM_NOTIFY` | Enable native system notifications (notify-send/plyer) | `false` |
+| `USERINTENT_LOG_PATH` | Path to log file | `.log/intent.log` |
+| `USERINTENT_TIMEOUT` | Default timeout for user responses (seconds) | `3000` (50 minutes) |
+| `USERINTENT_HISTORY_DAYS` | Number of days to keep completed intent history | `3` |
 
 Example MCP client configuration with custom timeout:
 ```json
 {
   "mcpServers": {
-    "feedback": {
+    "user-intent": {
       "command": "uv",
       "args": ["run", "python", "/path/to/server.py", "--mode", "stdio"],
       "env": {
-        "FEEDBACK_TIMEOUT": "600"
+        "USERINTENT_TIMEOUT": "600"
       }
     }
   }

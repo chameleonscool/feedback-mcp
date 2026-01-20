@@ -33,13 +33,13 @@ DATA_DIR = os.path.join(BASE_DIR, "data")
 LOG_DIR = os.path.join(BASE_DIR, ".log")
 
 # Configuration from Environment Variables (MCP Client Config)
-DB_PATH = os.getenv("FEEDBACK_DB_PATH", os.path.join(DATA_DIR, "feedback.db"))
-LOG_PATH = os.getenv("FEEDBACK_LOG_PATH", os.path.join(LOG_DIR, "feedback.log"))
+DB_PATH = os.getenv("USERINTENT_DB_PATH", os.path.join(DATA_DIR, "intent.db"))
+LOG_PATH = os.getenv("USERINTENT_LOG_PATH", os.path.join(LOG_DIR, "intent.log"))
 FATAL_LOG_PATH = os.path.join(LOG_DIR, "fatal.log")
-ENABLE_SYSTEM_NOTIFY = os.getenv("FEEDBACK_ENABLE_SYSTEM_NOTIFY", "false").lower() == "true"
-DEFAULT_TIMEOUT = int(os.getenv("FEEDBACK_TIMEOUT", "3000"))
+ENABLE_SYSTEM_NOTIFY = os.getenv("USERINTENT_ENABLE_SYSTEM_NOTIFY", "false").lower() == "true"
+DEFAULT_TIMEOUT = int(os.getenv("USERINTENT_TIMEOUT", "3000"))
 # History retention in days (0 = don't keep history)
-HISTORY_RETENTION_DAYS = int(os.getenv("FEEDBACK_HISTORY_DAYS", "3"))
+HISTORY_RETENTION_DAYS = int(os.getenv("USERINTENT_HISTORY_DAYS", "3"))
 
 # Ensure directories exist
 os.makedirs(os.path.dirname(DB_PATH), exist_ok=True)
@@ -66,7 +66,7 @@ console_handler.setLevel(logging.INFO)
 logging.basicConfig(level=logging.INFO, handlers=[file_handler, console_handler])
 
 # Set our app's logger to DEBUG
-logger = logging.getLogger("feedback_mcp")
+logger = logging.getLogger("user_intent_mcp")
 logger.setLevel(logging.DEBUG)
 
 # Silence specific noisy libraries
@@ -77,8 +77,56 @@ logging.getLogger("httpx").setLevel(logging.WARNING)
 
 
 # --- Fatal Error Handler ---
+def _extract_exception_group_details(exc, depth=0):
+    """Recursively extract details from ExceptionGroup."""
+    indent = "  " * depth
+    result = []
+    
+    if hasattr(exc, 'exceptions'):
+        result.append(f"{indent}ExceptionGroup: {exc}")
+        for i, nested_exc in enumerate(exc.exceptions):
+            result.append(f"{indent}  [{i+1}] {type(nested_exc).__name__}: {nested_exc}")
+            result.extend(_extract_exception_group_details(nested_exc, depth + 2))
+            if nested_exc.__traceback__:
+                tb_lines = ''.join(traceback.format_exception(type(nested_exc), nested_exc, nested_exc.__traceback__))
+                result.append(f"{indent}  Traceback:\n{tb_lines}")
+    return result
+
+
+def _extract_all_frames_locals(exc_traceback):
+    """Extract local variables from all frames in the traceback."""
+    frames_info = []
+    if not exc_traceback:
+        return frames_info
+    
+    tb = exc_traceback
+    frame_num = 0
+    while tb:
+        frame = tb.tb_frame
+        frame_num += 1
+        frame_info = {
+            'number': frame_num,
+            'filename': frame.f_code.co_filename,
+            'lineno': tb.tb_lineno,
+            'function': frame.f_code.co_name,
+            'locals': {}
+        }
+        try:
+            for key, value in frame.f_locals.items():
+                try:
+                    frame_info['locals'][key] = repr(value)[:200]
+                except Exception:
+                    frame_info['locals'][key] = '<unable to repr>'
+        except Exception:
+            pass
+        frames_info.append(frame_info)
+        tb = tb.tb_next
+    
+    return frames_info
+
+
 def log_fatal_error(exc_type, exc_value, exc_traceback):
-    """Log unhandled exceptions to fatal.log."""
+    """Log unhandled exceptions to fatal.log with detailed context."""
     if issubclass(exc_type, KeyboardInterrupt):
         # Don't log keyboard interrupts as fatal errors
         sys.__excepthook__(exc_type, exc_value, exc_traceback)
@@ -87,11 +135,78 @@ def log_fatal_error(exc_type, exc_value, exc_traceback):
     error_msg = ''.join(traceback.format_exception(exc_type, exc_value, exc_traceback))
     timestamp = time.strftime('%Y-%m-%d %H:%M:%S')
     
+    # Collect additional context
+    context_info = []
+    context_info.append(f"Python Version: {sys.version}")
+    context_info.append(f"Working Directory: {os.getcwd()}")
+    context_info.append(f"Command Line: {' '.join(sys.argv)}")
+    
+    # If it's an ExceptionGroup, extract all nested exceptions recursively
+    nested_info = ""
+    if hasattr(exc_value, 'exceptions'):
+        nested_info = "\n--- Nested Exceptions (Recursive) ---\n"
+        nested_details = _extract_exception_group_details(exc_value)
+        nested_info += '\n'.join(nested_details)
+    
+    # Extract chained exceptions (__cause__ and __context__)
+    chain_info = ""
+    current = exc_value
+    chain_depth = 0
+    while current and chain_depth < 10:  # Limit depth to prevent infinite loops
+        if current.__cause__:
+            chain_info += f"\n--- Caused by (depth {chain_depth + 1}) ---\n"
+            chain_info += f"Type: {type(current.__cause__).__name__}\n"
+            chain_info += f"Message: {current.__cause__}\n"
+            if current.__cause__.__traceback__:
+                chain_info += ''.join(traceback.format_exception(
+                    type(current.__cause__), current.__cause__, current.__cause__.__traceback__
+                ))
+            current = current.__cause__
+            chain_depth += 1
+        elif current.__context__ and not current.__suppress_context__:
+            chain_info += f"\n--- Context (depth {chain_depth + 1}) ---\n"
+            chain_info += f"Type: {type(current.__context__).__name__}\n"
+            chain_info += f"Message: {current.__context__}\n"
+            if current.__context__.__traceback__:
+                chain_info += ''.join(traceback.format_exception(
+                    type(current.__context__), current.__context__, current.__context__.__traceback__
+                ))
+            current = current.__context__
+            chain_depth += 1
+        else:
+            break
+    
+    # Extract local variables from ALL frames
+    local_vars_info = ""
+    frames = _extract_all_frames_locals(exc_traceback)
+    if frames:
+        local_vars_info = "\n--- Stack Frames with Local Variables ---\n"
+        for frame in frames:
+            local_vars_info += f"\nFrame #{frame['number']}: {frame['function']} "
+            local_vars_info += f"({frame['filename']}:{frame['lineno']})\n"
+            if frame['locals']:
+                for key, value in frame['locals'].items():
+                    local_vars_info += f"  {key}: {value}\n"
+            else:
+                local_vars_info += "  (no locals)\n"
+    
     fatal_entry = f"""
 {'='*60}
 FATAL ERROR at {timestamp} [PID:{PID}]
 {'='*60}
+
+--- System Context ---
+{chr(10).join(context_info)}
+
+--- Exception Details ---
+Type: {exc_type.__name__}
+Message: {exc_value}
+
+--- Full Traceback ---
 {error_msg}
+{nested_info}
+{chain_info}
+{local_vars_info}
 {'='*60}
 """
     
@@ -102,9 +217,14 @@ FATAL ERROR at {timestamp} [PID:{PID}]
     except Exception:
         pass  # Can't log the logging error
     
-    # Also log to regular logger
+    # Also log to regular logger with more detail
     logger.critical(f"FATAL ERROR: {exc_type.__name__}: {exc_value}")
-    logger.critical(f"See {FATAL_LOG_PATH} for full traceback")
+    logger.critical(f"Full traceback:\n{error_msg}")
+    if nested_info:
+        logger.critical(f"Nested exceptions:\n{nested_info}")
+    if chain_info:
+        logger.critical(f"Exception chain:\n{chain_info}")
+    logger.critical(f"See {FATAL_LOG_PATH} for full details including local variables")
     
     # Call the original exception hook
     sys.__excepthook__(exc_type, exc_value, exc_traceback)
@@ -131,7 +251,7 @@ def init_db():
     with sqlite3.connect(DB_PATH) as conn:
         # Create table if not exists
         conn.execute('''
-            CREATE TABLE IF NOT EXISTS feedback_queue (
+            CREATE TABLE IF NOT EXISTS intent_queue (
                 id TEXT PRIMARY KEY,
                 question TEXT NOT NULL,
                 answer TEXT,
@@ -143,11 +263,11 @@ def init_db():
         ''')
         # Add columns if they don't exist (for migration)
         try:
-            conn.execute('ALTER TABLE feedback_queue ADD COLUMN created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP')
+            conn.execute('ALTER TABLE intent_queue ADD COLUMN created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP')
         except sqlite3.OperationalError:
             pass  # Column already exists
         try:
-            conn.execute('ALTER TABLE feedback_queue ADD COLUMN completed_at TIMESTAMP')
+            conn.execute('ALTER TABLE intent_queue ADD COLUMN completed_at TIMESTAMP')
         except sqlite3.OperationalError:
             pass  # Column already exists
     logger.info(f"Database initialized at {DB_PATH}")
@@ -159,7 +279,7 @@ def cleanup_old_history():
         return
     with sqlite3.connect(DB_PATH) as conn:
         conn.execute('''
-            DELETE FROM feedback_queue 
+            DELETE FROM intent_queue 
             WHERE status = 'COMPLETED' 
             AND completed_at < datetime('now', ?)
         ''', (f'-{HISTORY_RETENTION_DAYS} days',))
@@ -186,22 +306,28 @@ def send_notification(title: str, message: str):
 
 
 # --- MCP Server ---
-mcp = FastMCP("Feedback Agent")
+mcp = FastMCP("User Intent Bridge")
 
 
 @mcp.tool
-def ask_user(question: str) -> str | list:
+def collect_user_intent(question: str) -> str | list:
     """
-    Ask the user a question and wait for their response.
+    Send a message to the user and collect their intent or response.
     
-    The question will be displayed in the Web UI (default: http://localhost:8000).
-    The user can respond with text and/or an image.
+    This tool displays content in a web interface and waits for user input.
+    Users can provide text responses and optionally attach images.
+    
+    Use cases:
+    - Request clarification on ambiguous requirements
+    - Get approval before proceeding with changes
+    - Collect additional context or preferences
+    - Show progress and request next steps
     
     Args:
-        question: The question to ask the user.
+        question: The message or question to present to the user.
     
     Returns:
-        The user's response (text, or list with text and image if image provided).
+        User's response as text, or a list containing text and image data.
     """
     timeout = DEFAULT_TIMEOUT
     request_id = str(uuid.uuid4())
@@ -209,13 +335,13 @@ def ask_user(question: str) -> str | list:
     # Store question in database
     with sqlite3.connect(DB_PATH) as conn:
         conn.execute(
-            "INSERT INTO feedback_queue (id, question, status) VALUES (?, ?, 'PENDING')",
+            "INSERT INTO intent_queue (id, question, status) VALUES (?, ?, 'PENDING')",
             (request_id, question)
         )
     
     logger.info(f"Question stored: {question[:50]}... (ID: {request_id})")
     # Send System Notification (if enabled)
-    send_notification("AI Collaboration Request", f"[{request_id[:8]}] {question}")
+    send_notification("AI Intent Request", f"[{request_id[:8]}] {question}")
     
     # Update state for native testing
     state.current_question = question
@@ -231,12 +357,12 @@ def ask_user(question: str) -> str | list:
             res = state.user_answer
             # Clean up DB for consistency
             with sqlite3.connect(DB_PATH) as conn:
-                conn.execute("DELETE FROM feedback_queue WHERE id = ?", (request_id,))
+                conn.execute("DELETE FROM intent_queue WHERE id = ?", (request_id,))
             return res
 
         with sqlite3.connect(DB_PATH) as conn:
             cursor = conn.execute(
-                "SELECT answer, image, status FROM feedback_queue WHERE id = ?",
+                "SELECT answer, image, status FROM intent_queue WHERE id = ?",
                 (request_id,)
             )
             row = cursor.fetchone()
@@ -246,7 +372,7 @@ def ask_user(question: str) -> str | list:
                 
                 if status == 'DISMISSED':
                     # Dismissed records are deleted immediately (not kept in history)
-                    conn.execute("DELETE FROM feedback_queue WHERE id = ?", (request_id,))
+                    conn.execute("DELETE FROM intent_queue WHERE id = ?", (request_id,))
                     return "User dismissed this request."
                 
                 if status == 'COMPLETED' and answer:
@@ -273,6 +399,6 @@ def ask_user(question: str) -> str | list:
     
     # Timeout - cleanup
     with sqlite3.connect(DB_PATH) as conn:
-        conn.execute("DELETE FROM feedback_queue WHERE id = ?", (request_id,))
+        conn.execute("DELETE FROM intent_queue WHERE id = ?", (request_id,))
     
     return "Timeout: No response received."

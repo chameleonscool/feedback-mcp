@@ -20,7 +20,7 @@ def run_web_server(host: str = "0.0.0.0", port: int = 8000):
 
 
 def main():
-    parser = argparse.ArgumentParser(description="Feedback MCP Server")
+    parser = argparse.ArgumentParser(description="User Intent MCP Server")
     parser.add_argument(
         "--mode", 
         choices=["sse", "stdio"], 
@@ -29,8 +29,8 @@ def main():
     )
     
     # Defaults from Environment Variables
-    env_port = int(os.getenv("FEEDBACK_WEB_PORT", "8000"))
-    env_host = os.getenv("FEEDBACK_WEB_HOST", "0.0.0.0")
+    env_port = int(os.getenv("USERINTENT_WEB_PORT", "8000"))
+    env_host = os.getenv("USERINTENT_WEB_HOST", "0.0.0.0")
 
     parser.add_argument(
         "--port",
@@ -45,7 +45,7 @@ def main():
     )
     args = parser.parse_args()
     
-    logger.info(f"Starting Feedback MCP Server in {args.mode.upper()} mode")
+    logger.info(f"Starting User Intent MCP Server in {args.mode.upper()} mode")
     logger.info(f"Data directory: {DATA_DIR}")
     logger.info(f"Log file: {LOG_PATH}")
     

@@ -15,10 +15,10 @@ import os
 from core import DB_PATH, BASE_DIR
 
 
-logger = logging.getLogger("feedback_mcp")
+logger = logging.getLogger("user_intent_mcp")
 
 # --- FastAPI App ---
-app = FastAPI(title="Feedback MCP", description="AI Agent Feedback Interface")
+app = FastAPI(title="User Intent MCP", description="AI Agent User Intent Collection Interface")
 
 # Templates & Static
 STATIC_DIR = os.path.join(BASE_DIR, "src", "static")
@@ -52,7 +52,7 @@ async def poll_question():
     """Returns list of all pending questions."""
     with sqlite3.connect(DB_PATH) as conn:
         cursor = conn.execute(
-            "SELECT id, question FROM feedback_queue WHERE status = 'PENDING'"
+            "SELECT id, question FROM intent_queue WHERE status = 'PENDING'"
         )
         rows = cursor.fetchall()
     return [{"id": row[0], "question": row[1]} for row in rows]
@@ -65,7 +65,7 @@ async def receive_reply(reply: ReplyModel):
     
     with sqlite3.connect(DB_PATH) as conn:
         conn.execute(
-            "UPDATE feedback_queue SET answer = ?, image = ?, status = 'COMPLETED', completed_at = CURRENT_TIMESTAMP WHERE id = ?",
+            "UPDATE intent_queue SET answer = ?, image = ?, status = 'COMPLETED', completed_at = CURRENT_TIMESTAMP WHERE id = ?",
             (reply.answer, reply.image, reply.id)
         )
     return {"status": "success"}
@@ -77,7 +77,7 @@ async def get_history():
     with sqlite3.connect(DB_PATH) as conn:
         cursor = conn.execute(
             """SELECT id, question, answer, completed_at 
-               FROM feedback_queue 
+               FROM intent_queue 
                WHERE status = 'COMPLETED' 
                ORDER BY completed_at DESC
                LIMIT 50"""
@@ -99,7 +99,7 @@ async def delete_request(request_id: str):
     """Dismisses a specific request."""
     with sqlite3.connect(DB_PATH) as conn:
         conn.execute(
-            "UPDATE feedback_queue SET status = 'DISMISSED' WHERE id = ?",
+            "UPDATE intent_queue SET status = 'DISMISSED' WHERE id = ?",
             (request_id,)
         )
     return {"status": "dismissed"}
@@ -110,7 +110,7 @@ async def delete_history_item(history_id: str):
     """Deletes a specific history item."""
     with sqlite3.connect(DB_PATH) as conn:
         conn.execute(
-            "DELETE FROM feedback_queue WHERE id = ? AND status = 'COMPLETED'",
+            "DELETE FROM intent_queue WHERE id = ? AND status = 'COMPLETED'",
             (history_id,)
         )
     return {"status": "deleted"}
@@ -126,7 +126,7 @@ async def delete_history_batch(data: DeleteHistoryModel):
     with sqlite3.connect(DB_PATH) as conn:
         placeholders = ','.join(['?' for _ in data.ids])
         conn.execute(
-            f"DELETE FROM feedback_queue WHERE id IN ({placeholders}) AND status = 'COMPLETED'",
+            f"DELETE FROM intent_queue WHERE id IN ({placeholders}) AND status = 'COMPLETED'",
             data.ids
         )
     return {"status": "deleted", "count": len(data.ids)}
