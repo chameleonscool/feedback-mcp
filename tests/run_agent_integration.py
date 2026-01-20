@@ -45,7 +45,7 @@ async def run_agent():
     
     async with Client(mcp) as client:
         print("[Agent] Sending Markdown question...")
-        result = await client.call_tool("ask_user", {"question": MARKDOWN_QUESTION, "timeout": 30})
+        result = await client.call_tool("collect_user_intent", {"question": MARKDOWN_QUESTION})
         print(f"[Agent] Workflow Completed. Result: {result}")
         
 if __name__ == "__main__":
