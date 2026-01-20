@@ -15,7 +15,7 @@ async def agent_task(name, duration=60):
         # Add random suffix to avoid dedup if any
         import random
         qid = random.randint(1000, 9999)
-        answer = await client.call_tool("ask_user", {"question": f"Question from Agent {name} ({qid})", "timeout": duration})
+        answer = await client.call_tool("collect_user_intent", {"question": f"Question from Agent {name} ({qid})"})
         print(f"[{name}] Received: {answer}")
 
 async def main():

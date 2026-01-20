@@ -4,7 +4,7 @@ import time
 import pytest
 from fastapi.testclient import TestClient
 from web import app
-from core import state, ask_user
+from core import state, collect_user_intent
 
 client = TestClient(app)
 
@@ -63,16 +63,17 @@ async def test_ask_user_flow():
     
     # Call the blocking function directly
     print("[Agent] Asking question (blocking)...")
-    from core import ask_user
-    # ask_user is decorated with @mcp.tool, making it a FunctionTool object
+    from core import collect_user_intent
+    # collect_user_intent is decorated with @mcp.tool, making it a FunctionTool object
     # Its underlying function is .fn, which is a regular sync function (not async)
-    # FastMCP handles the execution. Here we should call it as a regular function.
-    if hasattr(ask_user, "fn"):
+    # FastMCP handles the execution. We need to access .fn to call the original function.
+    loop = asyncio.get_event_loop()
+    if hasattr(collect_user_intent, "fn"):
         # The tool function itself is sync but performs blocking polling
-        loop = asyncio.get_event_loop()
-        answer = await loop.run_in_executor(None, ask_user.fn, "Do you like Python?", 10)
+        answer = await loop.run_in_executor(None, collect_user_intent.fn, "Do you like Python?")
     else:
-        answer = ask_user("Do you like Python?", timeout=10)
+        # Fallback: if for some reason .fn doesn't exist, try calling directly
+        answer = await loop.run_in_executor(None, collect_user_intent, "Do you like Python?")
     print(f"[Agent] Key returned: {answer}")
     
     sim_thread.join()
@@ -118,13 +119,14 @@ async def test_markdown_question_flow():
     
     # Call the blocking function with Markdown content
     print("[Agent] Asking Markdown question (blocking)...")
-    from core import ask_user
+    from core import collect_user_intent
     
-    if hasattr(ask_user, "fn"):
-        loop = asyncio.get_event_loop()
-        answer = await loop.run_in_executor(None, ask_user.fn, MARKDOWN_QUESTION, 10)
+    loop = asyncio.get_event_loop()
+    if hasattr(collect_user_intent, "fn"):
+        answer = await loop.run_in_executor(None, collect_user_intent.fn, MARKDOWN_QUESTION)
     else:
-        answer = ask_user(MARKDOWN_QUESTION, timeout=10)
+        # Fallback: if for some reason .fn doesn't exist, try calling directly
+        answer = await loop.run_in_executor(None, collect_user_intent, MARKDOWN_QUESTION)
     print(f"[Agent] Answer returned: {answer}")
     
     sim_thread.join()

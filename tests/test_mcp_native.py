@@ -9,10 +9,10 @@ from core import mcp, state
 # If not installed, we can run with standard asyncio.run() block
 
 @pytest.mark.asyncio
-async def test_ask_user_tool():
+async def test_collect_user_intent_tool():
     """
     Demonstrates testing the MCP tool in isolation using FastMCP's Client.
-    Note: 'ask_user' blocks, so we need to simulate the answer mechanism
+    Note: 'collect_user_intent' blocks, so we need to simulate the answer mechanism
     even in this unit test.
     """
     print("\n--- Starting Native MCP Test ---")
@@ -54,9 +54,9 @@ async def test_ask_user_tool():
     
     # Connect to the MCP server object directly (In-Memory)
     async with Client(mcp) as client:
-        # Call the tool with longer timeout to account for simulator delay
-        print("[Client] Calling ask_user...")
-        result = await client.call_tool("ask_user", {"question": "Unit Test Question?", "timeout": 15})
+        # Call the tool - timeout is controlled by USERINTENT_TIMEOUT env var, not a parameter
+        print("[Client] Calling collect_user_intent...")
+        result = await client.call_tool("collect_user_intent", {"question": "Unit Test Question?"})
     
     # Wait for simulator thread to complete
     sim_thread.join(timeout=5)
@@ -87,4 +87,4 @@ async def test_ask_user_tool():
     print("--- Native MCP Test PASSED ---")
 
 if __name__ == "__main__":
-    asyncio.run(test_ask_user_tool())
+    asyncio.run(test_collect_user_intent_tool())

@@ -12,7 +12,7 @@ logger = logging.getLogger("test_sse")
 @pytest.mark.asyncio
 async def test_sse_integration():
     """
-    Tests the SSE connection to the running Feedback MCP server.
+    Tests the SSE connection to the running User Intent MCP server.
     Assumes server is running at http://localhost:8000
     """
     # The URL we configured in main.py
@@ -35,15 +35,15 @@ async def test_sse_integration():
             tool_names = [t.name for t in tools]
             logger.info(f"Available tools: {tool_names}")
             
-            if "ask_user" not in tool_names:
-                logger.error("❌ 'ask_user' tool not found!")
+            if "collect_user_intent" not in tool_names:
+                logger.error("❌ 'collect_user_intent' tool not found!")
                 sys.exit(1)
             else:
-                logger.info("✅ Found 'ask_user' tool")
+                logger.info("✅ Found 'collect_user_intent' tool")
                 
-            # 2. Call Tool (Longer Timeout for Browser Interaction)
-            logger.info("Calling 'ask_user' with timeout (30s)...")
-            result = await client.call_tool("ask_user", {"question": "Browser Integration Test Question", "timeout": 30})
+            # 2. Call Tool (Timeout is controlled by USERINTENT_TIMEOUT env var)
+            logger.info("Calling 'collect_user_intent'...")
+            result = await client.call_tool("collect_user_intent", {"question": "Browser Integration Test Question"})
             
             logger.info(f"Tool Result: {result}")
             
