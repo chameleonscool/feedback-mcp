@@ -1,4 +1,4 @@
-<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 900 650">
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 950 750">
   <defs>
     <linearGradient id="titleGrad2" x1="0%" y1="0%" x2="100%" y2="0%">
       <stop offset="0%" style="stop-color:#059669"/>
@@ -22,8 +22,8 @@
   </defs>
   
   <!-- Title -->
-  <rect x="0" y="0" width="900" height="50" fill="url(#titleGrad2)"/>
-  <text x="450" y="32" text-anchor="middle" fill="white" font-family="Arial, sans-serif" font-size="20" font-weight="bold">
+  <rect x="0" y="0" width="950" height="50" fill="url(#titleGrad2)"/>
+  <text x="475" y="32" text-anchor="middle" fill="white" font-family="Arial, sans-serif" font-size="20" font-weight="bold">
     消息收发流程图
   </text>
   
@@ -31,104 +31,129 @@
   <rect x="60" y="70" width="100" height="40" rx="20" fill="#dbeafe" stroke="#3b82f6" stroke-width="2" filter="url(#shadow2)"/>
   <text x="110" y="95" text-anchor="middle" font-family="Arial, sans-serif" font-size="12" font-weight="bold" fill="#1e40af">🤖 AI Agent</text>
   
-  <rect x="260" y="70" width="100" height="40" rx="20" fill="#dcfce7" stroke="#22c55e" stroke-width="2" filter="url(#shadow2)"/>
-  <text x="310" y="95" text-anchor="middle" font-family="Arial, sans-serif" font-size="12" font-weight="bold" fill="#166534">⚙️ MCP Server</text>
+  <rect x="220" y="70" width="110" height="40" rx="20" fill="#dcfce7" stroke="#22c55e" stroke-width="2" filter="url(#shadow2)"/>
+  <text x="275" y="95" text-anchor="middle" font-family="Arial, sans-serif" font-size="12" font-weight="bold" fill="#166534">⚙️ 主进程</text>
   
-  <rect x="460" y="70" width="100" height="40" rx="20" fill="#fef3c7" stroke="#f59e0b" stroke-width="2" filter="url(#shadow2)"/>
-  <text x="510" y="95" text-anchor="middle" font-family="Arial, sans-serif" font-size="12" font-weight="bold" fill="#92400e">💾 Database</text>
+  <rect x="390" y="70" width="100" height="40" rx="20" fill="#fef3c7" stroke="#f59e0b" stroke-width="2" filter="url(#shadow2)"/>
+  <text x="440" y="95" text-anchor="middle" font-family="Arial, sans-serif" font-size="12" font-weight="bold" fill="#92400e">💾 Database</text>
   
-  <rect x="660" y="70" width="100" height="40" rx="20" fill="#fce7f3" stroke="#ec4899" stroke-width="2" filter="url(#shadow2)"/>
-  <text x="710" y="95" text-anchor="middle" font-family="Arial, sans-serif" font-size="12" font-weight="bold" fill="#9d174d">📱 飞书</text>
+  <rect x="550" y="70" width="110" height="40" rx="20" fill="#fce7f3" stroke="#ec4899" stroke-width="2" filter="url(#shadow2)"/>
+  <text x="605" y="95" text-anchor="middle" font-family="Arial, sans-serif" font-size="12" font-weight="bold" fill="#9d174d">📱 飞书</text>
+  
+  <rect x="720" y="70" width="110" height="40" rx="20" fill="#fce7f3" stroke="#ec4899" stroke-width="2" filter="url(#shadow2)"/>
+  <text x="775" y="95" text-anchor="middle" font-family="Arial, sans-serif" font-size="12" font-weight="bold" fill="#9d174d">🔌 WS子进程</text>
   
   <!-- User Actor (on right) -->
-  <rect x="780" y="70" width="80" height="40" rx="20" fill="#e0e7ff" stroke="#6366f1" stroke-width="2" filter="url(#shadow2)"/>
-  <text x="820" y="95" text-anchor="middle" font-family="Arial, sans-serif" font-size="12" font-weight="bold" fill="#4338ca">👤 用户</text>
+  <rect x="870" y="70" width="60" height="40" rx="20" fill="#e0e7ff" stroke="#6366f1" stroke-width="2" filter="url(#shadow2)"/>
+  <text x="900" y="95" text-anchor="middle" font-family="Arial, sans-serif" font-size="12" font-weight="bold" fill="#4338ca">👤</text>
   
   <!-- Lifelines -->
-  <line x1="110" y1="110" x2="110" y2="600" stroke="#3b82f6" stroke-width="2" stroke-dasharray="5,5"/>
-  <line x1="310" y1="110" x2="310" y2="600" stroke="#22c55e" stroke-width="2" stroke-dasharray="5,5"/>
-  <line x1="510" y1="110" x2="510" y2="600" stroke="#f59e0b" stroke-width="2" stroke-dasharray="5,5"/>
-  <line x1="710" y1="110" x2="710" y2="600" stroke="#ec4899" stroke-width="2" stroke-dasharray="5,5"/>
-  <line x1="820" y1="110" x2="820" y2="600" stroke="#6366f1" stroke-width="2" stroke-dasharray="5,5"/>
+  <line x1="110" y1="110" x2="110" y2="700" stroke="#3b82f6" stroke-width="2" stroke-dasharray="5,5"/>
+  <line x1="275" y1="110" x2="275" y2="700" stroke="#22c55e" stroke-width="2" stroke-dasharray="5,5"/>
+  <line x1="440" y1="110" x2="440" y2="700" stroke="#f59e0b" stroke-width="2" stroke-dasharray="5,5"/>
+  <line x1="605" y1="110" x2="605" y2="700" stroke="#ec4899" stroke-width="2" stroke-dasharray="5,5"/>
+  <line x1="775" y1="110" x2="775" y2="700" stroke="#ec4899" stroke-width="2" stroke-dasharray="5,5"/>
+  <line x1="900" y1="110" x2="900" y2="700" stroke="#6366f1" stroke-width="2" stroke-dasharray="5,5"/>
   
   <!-- Step 1: Call MCP Tool -->
   <rect x="20" y="130" width="20" height="20" rx="10" fill="#3b82f6"/>
   <text x="30" y="145" text-anchor="middle" font-family="Arial, sans-serif" font-size="11" font-weight="bold" fill="white">1</text>
-  <line x1="110" y1="140" x2="300" y2="140" stroke="#3b82f6" stroke-width="2" marker-end="url(#arrowBlue)"/>
-  <text x="205" y="135" text-anchor="middle" font-family="Arial, sans-serif" font-size="11" fill="#1e40af">collect_user_intent(question)</text>
+  <line x1="110" y1="140" x2="265" y2="140" stroke="#3b82f6" stroke-width="2" marker-end="url(#arrowBlue)"/>
+  <text x="187" y="135" text-anchor="middle" font-family="Arial, sans-serif" font-size="10" fill="#1e40af">collect_user_intent(question)</text>
   
   <!-- Step 2: Read API Key -->
-  <rect x="20" y="165" width="20" height="20" rx="10" fill="#22c55e"/>
-  <text x="30" y="180" text-anchor="middle" font-family="Arial, sans-serif" font-size="11" font-weight="bold" fill="white">2</text>
-  <rect x="250" y="155" width="120" height="35" rx="4" fill="#dcfce7" stroke="#22c55e" stroke-width="1"/>
-  <text x="310" y="173" text-anchor="middle" font-family="Arial, sans-serif" font-size="10" fill="#166534">读取环境变量</text>
-  <text x="310" y="185" text-anchor="middle" font-family="Arial, sans-serif" font-size="9" fill="#15803d">USERINTENT_API_KEY</text>
+  <rect x="20" y="160" width="20" height="20" rx="10" fill="#22c55e"/>
+  <text x="30" y="175" text-anchor="middle" font-family="Arial, sans-serif" font-size="11" font-weight="bold" fill="white">2</text>
+  <rect x="215" y="155" width="120" height="30" rx="4" fill="#dcfce7" stroke="#22c55e" stroke-width="1"/>
+  <text x="275" y="173" text-anchor="middle" font-family="Arial, sans-serif" font-size="9" fill="#166534">读取 USERINTENT_API_KEY</text>
   
   <!-- Step 3: Query User -->
-  <rect x="20" y="205" width="20" height="20" rx="10" fill="#22c55e"/>
-  <text x="30" y="220" text-anchor="middle" font-family="Arial, sans-serif" font-size="11" font-weight="bold" fill="white">3</text>
-  <line x1="310" y1="215" x2="500" y2="215" stroke="#22c55e" stroke-width="2" marker-end="url(#arrowGreen2)"/>
-  <text x="405" y="210" text-anchor="middle" font-family="Arial, sans-serif" font-size="11" fill="#166534">查询用户 by API Key</text>
+  <rect x="20" y="195" width="20" height="20" rx="10" fill="#22c55e"/>
+  <text x="30" y="210" text-anchor="middle" font-family="Arial, sans-serif" font-size="11" font-weight="bold" fill="white">3</text>
+  <line x1="275" y1="205" x2="430" y2="205" stroke="#22c55e" stroke-width="2" marker-end="url(#arrowGreen2)"/>
+  <text x="352" y="200" text-anchor="middle" font-family="Arial, sans-serif" font-size="10" fill="#166534">查询用户 by API Key</text>
   
   <!-- Step 4: Return User Info -->
-  <rect x="20" y="240" width="20" height="20" rx="10" fill="#f59e0b"/>
-  <text x="30" y="255" text-anchor="middle" font-family="Arial, sans-serif" font-size="11" font-weight="bold" fill="white">4</text>
-  <line x1="500" y1="250" x2="320" y2="250" stroke="#f59e0b" stroke-width="2" marker-end="url(#arrowOrange)"/>
-  <text x="410" y="245" text-anchor="middle" font-family="Arial, sans-serif" font-size="11" fill="#92400e">返回 user.open_id</text>
+  <rect x="20" y="225" width="20" height="20" rx="10" fill="#f59e0b"/>
+  <text x="30" y="240" text-anchor="middle" font-family="Arial, sans-serif" font-size="11" font-weight="bold" fill="white">4</text>
+  <line x1="430" y1="235" x2="285" y2="235" stroke="#f59e0b" stroke-width="2" marker-end="url(#arrowOrange)"/>
+  <text x="357" y="230" text-anchor="middle" font-family="Arial, sans-serif" font-size="10" fill="#92400e">返回 user.open_id</text>
   
-  <!-- Step 5: Store Intent -->
-  <rect x="20" y="275" width="20" height="20" rx="10" fill="#22c55e"/>
-  <text x="30" y="290" text-anchor="middle" font-family="Arial, sans-serif" font-size="11" font-weight="bold" fill="white">5</text>
-  <line x1="310" y1="285" x2="500" y2="285" stroke="#22c55e" stroke-width="2" marker-end="url(#arrowGreen2)"/>
-  <text x="405" y="280" text-anchor="middle" font-family="Arial, sans-serif" font-size="11" fill="#166534">存储 intent_queue</text>
+  <!-- Step 5: Store Intent with user_id -->
+  <rect x="20" y="255" width="20" height="20" rx="10" fill="#22c55e"/>
+  <text x="30" y="270" text-anchor="middle" font-family="Arial, sans-serif" font-size="11" font-weight="bold" fill="white">5</text>
+  <line x1="275" y1="265" x2="430" y2="265" stroke="#22c55e" stroke-width="2" marker-end="url(#arrowGreen2)"/>
+  <text x="352" y="260" text-anchor="middle" font-family="Arial, sans-serif" font-size="10" fill="#166534">存储 intent_queue (user_id)</text>
   
-  <!-- Step 6: Send to Feishu -->
-  <rect x="20" y="310" width="20" height="20" rx="10" fill="#22c55e"/>
-  <text x="30" y="325" text-anchor="middle" font-family="Arial, sans-serif" font-size="11" font-weight="bold" fill="white">6</text>
-  <line x1="310" y1="320" x2="700" y2="320" stroke="#22c55e" stroke-width="2" marker-end="url(#arrowGreen2)"/>
-  <text x="505" y="315" text-anchor="middle" font-family="Arial, sans-serif" font-size="11" fill="#166534">发送消息 (receive_id=open_id)</text>
+  <!-- Step 6: Check Feishu Notify -->
+  <rect x="20" y="290" width="20" height="20" rx="10" fill="#22c55e"/>
+  <text x="30" y="305" text-anchor="middle" font-family="Arial, sans-serif" font-size="11" font-weight="bold" fill="white">6</text>
+  <rect x="215" y="285" width="120" height="35" rx="4" fill="#fef3c7" stroke="#f59e0b" stroke-width="1"/>
+  <text x="275" y="300" text-anchor="middle" font-family="Arial, sans-serif" font-size="9" fill="#92400e">检查飞书通知开关</text>
+  <text x="275" y="312" text-anchor="middle" font-family="Arial, sans-serif" font-size="8" fill="#a16207">(user_settings)</text>
   
-  <!-- Step 7: Feishu to User -->
-  <rect x="20" y="345" width="20" height="20" rx="10" fill="#ec4899"/>
-  <text x="30" y="360" text-anchor="middle" font-family="Arial, sans-serif" font-size="11" font-weight="bold" fill="white">7</text>
-  <line x1="710" y1="355" x2="830" y2="355" stroke="#ec4899" stroke-width="2" marker-end="url(#arrowPink)"/>
-  <text x="770" y="350" text-anchor="middle" font-family="Arial, sans-serif" font-size="11" fill="#9d174d">推送消息</text>
+  <!-- Step 7: Send to Feishu (if enabled) -->
+  <rect x="20" y="330" width="20" height="20" rx="10" fill="#22c55e"/>
+  <text x="30" y="345" text-anchor="middle" font-family="Arial, sans-serif" font-size="11" font-weight="bold" fill="white">7</text>
+  <line x1="275" y1="340" x2="595" y2="340" stroke="#22c55e" stroke-width="2" marker-end="url(#arrowGreen2)"/>
+  <text x="435" y="335" text-anchor="middle" font-family="Arial, sans-serif" font-size="10" fill="#166534">发送消息 (receive_id=open_id) [如开启]</text>
   
-  <!-- Step 8: User Reply -->
-  <rect x="20" y="380" width="20" height="20" rx="10" fill="#6366f1"/>
-  <text x="30" y="395" text-anchor="middle" font-family="Arial, sans-serif" font-size="11" font-weight="bold" fill="white">8</text>
-  <line x1="810" y1="390" x2="720" y2="390" stroke="#6366f1" stroke-width="2" marker-end="url(#arrowPink)"/>
-  <text x="765" y="385" text-anchor="middle" font-family="Arial, sans-serif" font-size="11" fill="#4338ca">用户回复</text>
+  <!-- Step 8: Feishu to User -->
+  <rect x="20" y="365" width="20" height="20" rx="10" fill="#ec4899"/>
+  <text x="30" y="380" text-anchor="middle" font-family="Arial, sans-serif" font-size="11" font-weight="bold" fill="white">8</text>
+  <line x1="605" y1="375" x2="890" y2="375" stroke="#ec4899" stroke-width="2" marker-end="url(#arrowPink)"/>
+  <text x="747" y="370" text-anchor="middle" font-family="Arial, sans-serif" font-size="10" fill="#9d174d">推送消息到飞书 App</text>
   
-  <!-- Step 9: WebSocket Event -->
-  <rect x="20" y="415" width="20" height="20" rx="10" fill="#ec4899"/>
-  <text x="30" y="430" text-anchor="middle" font-family="Arial, sans-serif" font-size="11" font-weight="bold" fill="white">9</text>
-  <line x1="700" y1="425" x2="320" y2="425" stroke="#ec4899" stroke-width="2" marker-end="url(#arrowPink)"/>
-  <text x="510" y="420" text-anchor="middle" font-family="Arial, sans-serif" font-size="11" fill="#9d174d">WebSocket 事件 (im.message.receive)</text>
+  <!-- Step 9: User Reply in Feishu -->
+  <rect x="20" y="400" width="20" height="20" rx="10" fill="#6366f1"/>
+  <text x="30" y="415" text-anchor="middle" font-family="Arial, sans-serif" font-size="11" font-weight="bold" fill="white">9</text>
+  <line x1="890" y1="410" x2="615" y2="410" stroke="#6366f1" stroke-width="2" marker-end="url(#arrowPink)"/>
+  <text x="752" y="405" text-anchor="middle" font-family="Arial, sans-serif" font-size="10" fill="#4338ca">用户在飞书中回复</text>
   
-  <!-- Step 10: Update Database -->
-  <rect x="20" y="450" width="20" height="20" rx="10" fill="#22c55e"/>
-  <text x="30" y="465" text-anchor="middle" font-family="Arial, sans-serif" font-size="11" font-weight="bold" fill="white">10</text>
-  <line x1="310" y1="460" x2="500" y2="460" stroke="#22c55e" stroke-width="2" marker-end="url(#arrowGreen2)"/>
-  <text x="405" y="455" text-anchor="middle" font-family="Arial, sans-serif" font-size="11" fill="#166534">更新 intent_queue</text>
+  <!-- Step 10: WebSocket Event to Subprocess -->
+  <rect x="20" y="435" width="20" height="20" rx="10" fill="#ec4899"/>
+  <text x="30" y="450" text-anchor="middle" font-family="Arial, sans-serif" font-size="11" font-weight="bold" fill="white">10</text>
+  <line x1="605" y1="445" x2="765" y2="445" stroke="#ec4899" stroke-width="2" marker-end="url(#arrowPink)"/>
+  <text x="685" y="440" text-anchor="middle" font-family="Arial, sans-serif" font-size="10" fill="#9d174d">WebSocket 长连接事件</text>
   
-  <!-- Step 11: Return Reply -->
-  <rect x="20" y="485" width="20" height="20" rx="10" fill="#22c55e"/>
-  <text x="30" y="500" text-anchor="middle" font-family="Arial, sans-serif" font-size="11" font-weight="bold" fill="white">11</text>
-  <line x1="300" y1="495" x2="120" y2="495" stroke="#22c55e" stroke-width="2" marker-end="url(#arrowGreen2)"/>
-  <text x="210" y="490" text-anchor="middle" font-family="Arial, sans-serif" font-size="11" fill="#166534">返回用户回复</text>
+  <!-- Step 11: Subprocess writes to DB -->
+  <rect x="20" y="470" width="20" height="20" rx="10" fill="#ec4899"/>
+  <text x="30" y="485" text-anchor="middle" font-family="Arial, sans-serif" font-size="11" font-weight="bold" fill="white">11</text>
+  <line x1="775" y1="480" x2="450" y2="480" stroke="#ec4899" stroke-width="2" marker-end="url(#arrowOrange)"/>
+  <text x="612" y="475" text-anchor="middle" font-family="Arial, sans-serif" font-size="10" fill="#9d174d">更新 intent_queue (回复)</text>
+  
+  <!-- Step 12: Main process polls DB -->
+  <rect x="20" y="505" width="20" height="20" rx="10" fill="#22c55e"/>
+  <text x="30" y="520" text-anchor="middle" font-family="Arial, sans-serif" font-size="11" font-weight="bold" fill="white">12</text>
+  <line x1="275" y1="515" x2="430" y2="515" stroke="#22c55e" stroke-width="2" marker-end="url(#arrowGreen2)"/>
+  <text x="352" y="510" text-anchor="middle" font-family="Arial, sans-serif" font-size="10" fill="#166534">轮询数据库</text>
+  
+  <!-- Step 13: Return Reply -->
+  <rect x="20" y="540" width="20" height="20" rx="10" fill="#f59e0b"/>
+  <text x="30" y="555" text-anchor="middle" font-family="Arial, sans-serif" font-size="11" font-weight="bold" fill="white">13</text>
+  <line x1="430" y1="550" x2="285" y2="550" stroke="#f59e0b" stroke-width="2" marker-end="url(#arrowOrange)"/>
+  <text x="357" y="545" text-anchor="middle" font-family="Arial, sans-serif" font-size="10" fill="#92400e">返回回复内容</text>
+  
+  <!-- Step 14: Return to AI -->
+  <rect x="20" y="575" width="20" height="20" rx="10" fill="#22c55e"/>
+  <text x="30" y="590" text-anchor="middle" font-family="Arial, sans-serif" font-size="11" font-weight="bold" fill="white">14</text>
+  <line x1="265" y1="585" x2="120" y2="585" stroke="#22c55e" stroke-width="2" marker-end="url(#arrowGreen2)"/>
+  <text x="192" y="580" text-anchor="middle" font-family="Arial, sans-serif" font-size="10" fill="#166534">返回用户回复</text>
   
   <!-- Final State -->
-  <rect x="50" y="520" width="180" height="35" rx="6" fill="#dbeafe" stroke="#3b82f6" stroke-width="2"/>
-  <text x="140" y="542" text-anchor="middle" font-family="Arial, sans-serif" font-size="12" font-weight="bold" fill="#1e40af">✅ AI 继续执行任务</text>
+  <rect x="50" y="610" width="180" height="35" rx="6" fill="#dbeafe" stroke="#3b82f6" stroke-width="2"/>
+  <text x="140" y="632" text-anchor="middle" font-family="Arial, sans-serif" font-size="12" font-weight="bold" fill="#1e40af">✅ AI 继续执行任务</text>
   
   <!-- Alternative Path: Web UI -->
-  <rect x="450" y="520" width="400" height="70" rx="8" fill="#f0fdf4" stroke="#22c55e" stroke-width="2" stroke-dasharray="4,4"/>
-  <text x="650" y="540" text-anchor="middle" font-family="Arial, sans-serif" font-size="11" font-weight="bold" fill="#166534">📝 备选路径：Web UI 回复</text>
-  <text x="650" y="558" text-anchor="middle" font-family="Arial, sans-serif" font-size="10" fill="#64748b">用户也可以在 Web UI 中查看问题并回复</text>
-  <text x="650" y="575" text-anchor="middle" font-family="Arial, sans-serif" font-size="10" fill="#64748b">系统自动同步到 intent_queue，AI 获得响应</text>
+  <rect x="300" y="610" width="350" height="80" rx="8" fill="#f0fdf4" stroke="#22c55e" stroke-width="2" stroke-dasharray="4,4"/>
+  <text x="475" y="630" text-anchor="middle" font-family="Arial, sans-serif" font-size="11" font-weight="bold" fill="#166534">📝 备选路径：Web UI 回复</text>
+  <text x="475" y="650" text-anchor="middle" font-family="Arial, sans-serif" font-size="10" fill="#64748b">用户也可以在 Web UI 中查看问题并回复</text>
+  <text x="475" y="670" text-anchor="middle" font-family="Arial, sans-serif" font-size="10" fill="#64748b">系统直接更新 intent_queue，主进程轮询获取</text>
   
   <!-- Legend -->
-  <rect x="50" y="560" width="180" height="35" rx="6" fill="#fef3c7" stroke="#f59e0b" stroke-width="1"/>
-  <text x="140" y="582" text-anchor="middle" font-family="Arial, sans-serif" font-size="10" fill="#92400e">💡 API Key 未配置时，降级到 Web UI</text>
+  <rect x="700" y="610" width="230" height="80" rx="8" fill="#fef3c7" stroke="#f59e0b" stroke-width="1"/>
+  <text x="815" y="630" text-anchor="middle" font-family="Arial, sans-serif" font-size="10" font-weight="bold" fill="#92400e">💡 说明</text>
+  <text x="715" y="650" font-family="Arial, sans-serif" font-size="9" fill="#92400e">• API Key 未配置时，降级到 Web UI</text>
+  <text x="715" y="665" font-family="Arial, sans-serif" font-size="9" fill="#92400e">• 飞书通知关闭时，跳过步骤 7-11</text>
+  <text x="715" y="680" font-family="Arial, sans-serif" font-size="9" fill="#92400e">• WS子进程独立运行，通过数据库通信</text>
 </svg>
