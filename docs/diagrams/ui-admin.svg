@@ -1,0 +1,100 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 700 650">
+  <defs>
+    <linearGradient id="adminBg" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" style="stop-color:#fafafa"/>
+      <stop offset="100%" style="stop-color:#f4f4f5"/>
+    </linearGradient>
+    <linearGradient id="adminHeader" x1="0%" y1="0%" x2="100%" y2="0%">
+      <stop offset="0%" style="stop-color:#18181b"/>
+      <stop offset="100%" style="stop-color:#27272a"/>
+    </linearGradient>
+    <filter id="adminShadow" x="-5%" y="-5%" width="110%" height="115%">
+      <feDropShadow dx="0" dy="2" stdDeviation="4" flood-opacity="0.08"/>
+    </filter>
+  </defs>
+  
+  <!-- Background -->
+  <rect x="0" y="0" width="700" height="650" fill="url(#adminBg)"/>
+  
+  <!-- Header -->
+  <rect x="0" y="0" width="700" height="60" fill="url(#adminHeader)"/>
+  <text x="30" y="38" font-family="Arial, sans-serif" font-size="16" font-weight="bold" fill="white">
+    ⚙️ 管理后台
+  </text>
+  <text x="150" y="38" font-family="Arial, sans-serif" font-size="12" fill="#a1a1aa">
+    AI Intent Center Admin
+  </text>
+  
+  <!-- Logout -->
+  <rect x="610" y="18" width="70" height="28" rx="4" fill="#27272a" stroke="#3f3f46" stroke-width="1"/>
+  <text x="645" y="37" text-anchor="middle" font-family="Arial, sans-serif" font-size="11" fill="#a1a1aa">登出</text>
+  
+  <!-- Sidebar -->
+  <rect x="0" y="60" width="160" height="590" fill="#fafafa" stroke="#e4e4e7" stroke-width="1"/>
+  
+  <!-- Sidebar Items -->
+  <rect x="10" y="80" width="140" height="36" rx="6" fill="#3b82f6"/>
+  <text x="25" y="103" font-family="Arial, sans-serif" font-size="12" fill="white">📊 系统配置</text>
+  
+  <rect x="10" y="126" width="140" height="36" rx="6" fill="transparent"/>
+  <text x="25" y="149" font-family="Arial, sans-serif" font-size="12" fill="#71717a">👥 用户管理</text>
+  
+  <rect x="10" y="172" width="140" height="36" rx="6" fill="transparent"/>
+  <text x="25" y="195" font-family="Arial, sans-serif" font-size="12" fill="#71717a">📈 统计数据</text>
+  
+  <!-- Main Content -->
+  <rect x="180" y="80" width="500" height="550" rx="12" fill="white" filter="url(#adminShadow)"/>
+  
+  <!-- Content Header -->
+  <text x="210" y="115" font-family="Arial, sans-serif" font-size="18" font-weight="bold" fill="#18181b">系统配置</text>
+  <text x="210" y="135" font-family="Arial, sans-serif" font-size="12" fill="#71717a">配置飞书应用凭证和系统设置</text>
+  
+  <!-- Feishu Config Section -->
+  <rect x="200" y="155" width="460" height="220" rx="8" fill="#fafafa" stroke="#e4e4e7" stroke-width="1"/>
+  <text x="220" y="180" font-family="Arial, sans-serif" font-size="14" font-weight="bold" fill="#18181b">🔐 飞书应用配置</text>
+  
+  <!-- App ID -->
+  <text x="220" y="210" font-family="Arial, sans-serif" font-size="11" fill="#52525b">App ID</text>
+  <rect x="220" y="218" width="420" height="36" rx="6" fill="white" stroke="#d4d4d8" stroke-width="1"/>
+  <text x="235" y="241" font-family="monospace" font-size="12" fill="#3f3f46">cli_a1b2c3d4e5f6g7h8</text>
+  
+  <!-- App Secret -->
+  <text x="220" y="275" font-family="Arial, sans-serif" font-size="11" fill="#52525b">App Secret</text>
+  <rect x="220" y="283" width="420" height="36" rx="6" fill="white" stroke="#d4d4d8" stroke-width="1"/>
+  <text x="235" y="306" font-family="monospace" font-size="12" fill="#a1a1aa">••••••••••••••••••••••••</text>
+  <rect x="590" y="291" width="40" height="20" rx="4" fill="#f4f4f5"/>
+  <text x="610" y="305" text-anchor="middle" font-family="Arial, sans-serif" font-size="9" fill="#71717a">显示</text>
+  
+  <!-- OAuth Redirect URI -->
+  <text x="220" y="340" font-family="Arial, sans-serif" font-size="11" fill="#52525b">OAuth 回调地址</text>
+  <rect x="220" y="348" width="420" height="36" rx="6" fill="#f4f4f5" stroke="#d4d4d8" stroke-width="1"/>
+  <text x="235" y="371" font-family="monospace" font-size="11" fill="#71717a">https://your-domain.com/auth/feishu/callback</text>
+  
+  <!-- Admin Password Section -->
+  <rect x="200" y="390" width="460" height="100" rx="8" fill="#fafafa" stroke="#e4e4e7" stroke-width="1"/>
+  <text x="220" y="415" font-family="Arial, sans-serif" font-size="14" font-weight="bold" fill="#18181b">🔒 管理员密码</text>
+  
+  <text x="220" y="445" font-family="Arial, sans-serif" font-size="11" fill="#52525b">新密码</text>
+  <rect x="220" y="453" width="200" height="36" rx="6" fill="white" stroke="#d4d4d8" stroke-width="1"/>
+  <text x="235" y="476" font-family="Arial, sans-serif" font-size="12" fill="#a1a1aa">••••••••</text>
+  
+  <text x="440" y="445" font-family="Arial, sans-serif" font-size="11" fill="#52525b">确认密码</text>
+  <rect x="440" y="453" width="200" height="36" rx="6" fill="white" stroke="#d4d4d8" stroke-width="1"/>
+  <text x="455" y="476" font-family="Arial, sans-serif" font-size="12" fill="#a1a1aa">••••••••</text>
+  
+  <!-- Status Section -->
+  <rect x="200" y="505" width="460" height="50" rx="8" fill="#dcfce7" stroke="#bbf7d0" stroke-width="1"/>
+  <circle cx="225" cy="530" r="6" fill="#22c55e"/>
+  <text x="245" y="535" font-family="Arial, sans-serif" font-size="12" fill="#166534">飞书连接正常</text>
+  <text x="400" y="535" font-family="Arial, sans-serif" font-size="11" fill="#166534">WebSocket: 已连接 | 用户数: 12 | 今日请求: 156</text>
+  
+  <!-- Action Buttons -->
+  <rect x="200" y="570" width="100" height="40" rx="8" fill="#3b82f6"/>
+  <text x="250" y="595" text-anchor="middle" font-family="Arial, sans-serif" font-size="13" font-weight="bold" fill="white">保存配置</text>
+  
+  <rect x="320" y="570" width="100" height="40" rx="8" fill="white" stroke="#d4d4d8" stroke-width="1"/>
+  <text x="370" y="595" text-anchor="middle" font-family="Arial, sans-serif" font-size="13" fill="#52525b">测试连接</text>
+  
+  <rect x="440" y="570" width="100" height="40" rx="8" fill="white" stroke="#fca5a5" stroke-width="1"/>
+  <text x="490" y="595" text-anchor="middle" font-family="Arial, sans-serif" font-size="13" fill="#dc2626">重置配置</text>
+</svg>

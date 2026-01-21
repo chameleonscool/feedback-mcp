@@ -1,0 +1,134 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 900 700">
+  <defs>
+    <linearGradient id="titleGrad" x1="0%" y1="0%" x2="100%" y2="0%">
+      <stop offset="0%" style="stop-color:#3b82f6"/>
+      <stop offset="100%" style="stop-color:#8b5cf6"/>
+    </linearGradient>
+    <filter id="shadow" x="-20%" y="-20%" width="140%" height="140%">
+      <feDropShadow dx="2" dy="2" stdDeviation="2" flood-opacity="0.1"/>
+    </filter>
+    <marker id="arrow" markerWidth="10" markerHeight="7" refX="9" refY="3.5" orient="auto">
+      <polygon points="0 0, 10 3.5, 0 7" fill="#3b82f6"/>
+    </marker>
+    <marker id="arrowGreen" markerWidth="10" markerHeight="7" refX="9" refY="3.5" orient="auto">
+      <polygon points="0 0, 10 3.5, 0 7" fill="#22c55e"/>
+    </marker>
+    <marker id="arrowPurple" markerWidth="10" markerHeight="7" refX="9" refY="3.5" orient="auto">
+      <polygon points="0 0, 10 3.5, 0 7" fill="#8b5cf6"/>
+    </marker>
+  </defs>
+  
+  <!-- Title -->
+  <rect x="0" y="0" width="900" height="50" fill="url(#titleGrad)"/>
+  <text x="450" y="32" text-anchor="middle" fill="white" font-family="Arial, sans-serif" font-size="20" font-weight="bold">
+    飞书 OAuth 登录流程图
+  </text>
+  
+  <!-- Actors -->
+  <rect x="80" y="70" width="100" height="40" rx="20" fill="#dbeafe" stroke="#3b82f6" stroke-width="2" filter="url(#shadow)"/>
+  <text x="130" y="95" text-anchor="middle" font-family="Arial, sans-serif" font-size="13" font-weight="bold" fill="#1e40af">👤 用户</text>
+  
+  <rect x="280" y="70" width="100" height="40" rx="20" fill="#dcfce7" stroke="#22c55e" stroke-width="2" filter="url(#shadow)"/>
+  <text x="330" y="95" text-anchor="middle" font-family="Arial, sans-serif" font-size="13" font-weight="bold" fill="#166534">🌐 Web UI</text>
+  
+  <rect x="480" y="70" width="100" height="40" rx="20" fill="#f3e8ff" stroke="#8b5cf6" stroke-width="2" filter="url(#shadow)"/>
+  <text x="530" y="95" text-anchor="middle" font-family="Arial, sans-serif" font-size="13" font-weight="bold" fill="#6b21a8">⚙️ Server</text>
+  
+  <rect x="680" y="70" width="100" height="40" rx="20" fill="#fce7f3" stroke="#ec4899" stroke-width="2" filter="url(#shadow)"/>
+  <text x="730" y="95" text-anchor="middle" font-family="Arial, sans-serif" font-size="13" font-weight="bold" fill="#9d174d">🔐 飞书</text>
+  
+  <!-- Lifelines -->
+  <line x1="130" y1="110" x2="130" y2="650" stroke="#3b82f6" stroke-width="2" stroke-dasharray="5,5"/>
+  <line x1="330" y1="110" x2="330" y2="650" stroke="#22c55e" stroke-width="2" stroke-dasharray="5,5"/>
+  <line x1="530" y1="110" x2="530" y2="650" stroke="#8b5cf6" stroke-width="2" stroke-dasharray="5,5"/>
+  <line x1="730" y1="110" x2="730" y2="650" stroke="#ec4899" stroke-width="2" stroke-dasharray="5,5"/>
+  
+  <!-- Step 1: Click Login -->
+  <rect x="30" y="130" width="20" height="20" rx="10" fill="#3b82f6"/>
+  <text x="40" y="145" text-anchor="middle" font-family="Arial, sans-serif" font-size="11" font-weight="bold" fill="white">1</text>
+  <line x1="130" y1="140" x2="320" y2="140" stroke="#3b82f6" stroke-width="2" marker-end="url(#arrow)"/>
+  <text x="225" y="135" text-anchor="middle" font-family="Arial, sans-serif" font-size="11" fill="#1e40af">点击"飞书登录"</text>
+  
+  <!-- Step 2: Request OAuth URL -->
+  <rect x="30" y="170" width="20" height="20" rx="10" fill="#22c55e"/>
+  <text x="40" y="185" text-anchor="middle" font-family="Arial, sans-serif" font-size="11" font-weight="bold" fill="white">2</text>
+  <line x1="330" y1="180" x2="520" y2="180" stroke="#22c55e" stroke-width="2" marker-end="url(#arrowGreen)"/>
+  <text x="425" y="175" text-anchor="middle" font-family="Arial, sans-serif" font-size="11" fill="#166534">GET /auth/feishu</text>
+  
+  <!-- Step 3: Generate OAuth URL -->
+  <rect x="30" y="210" width="20" height="20" rx="10" fill="#8b5cf6"/>
+  <text x="40" y="225" text-anchor="middle" font-family="Arial, sans-serif" font-size="11" font-weight="bold" fill="white">3</text>
+  <rect x="470" y="200" width="120" height="35" rx="4" fill="#f3e8ff" stroke="#8b5cf6" stroke-width="1"/>
+  <text x="530" y="215" text-anchor="middle" font-family="Arial, sans-serif" font-size="10" fill="#6b21a8">生成 OAuth URL</text>
+  <text x="530" y="228" text-anchor="middle" font-family="Arial, sans-serif" font-size="9" fill="#9333ea">(含 state 参数)</text>
+  
+  <!-- Step 4: Return OAuth URL -->
+  <rect x="30" y="250" width="20" height="20" rx="10" fill="#8b5cf6"/>
+  <text x="40" y="265" text-anchor="middle" font-family="Arial, sans-serif" font-size="11" font-weight="bold" fill="white">4</text>
+  <line x1="520" y1="260" x2="340" y2="260" stroke="#8b5cf6" stroke-width="2" marker-end="url(#arrowPurple)"/>
+  <text x="430" y="255" text-anchor="middle" font-family="Arial, sans-serif" font-size="11" fill="#6b21a8">302 Redirect</text>
+  
+  <!-- Step 5: Redirect to Feishu -->
+  <rect x="30" y="290" width="20" height="20" rx="10" fill="#22c55e"/>
+  <text x="40" y="305" text-anchor="middle" font-family="Arial, sans-serif" font-size="11" font-weight="bold" fill="white">5</text>
+  <line x1="330" y1="300" x2="140" y2="300" stroke="#22c55e" stroke-width="2" marker-end="url(#arrowGreen)"/>
+  <text x="235" y="295" text-anchor="middle" font-family="Arial, sans-serif" font-size="11" fill="#166534">跳转到飞书授权页</text>
+  
+  <!-- Step 6: User at Feishu -->
+  <rect x="30" y="330" width="20" height="20" rx="10" fill="#3b82f6"/>
+  <text x="40" y="345" text-anchor="middle" font-family="Arial, sans-serif" font-size="11" font-weight="bold" fill="white">6</text>
+  <line x1="130" y1="340" x2="720" y2="340" stroke="#3b82f6" stroke-width="2" marker-end="url(#arrow)"/>
+  <text x="425" y="335" text-anchor="middle" font-family="Arial, sans-serif" font-size="11" fill="#1e40af">用户在飞书授权页面点击"授权"</text>
+  
+  <!-- Step 7: Feishu Callback -->
+  <rect x="30" y="370" width="20" height="20" rx="10" fill="#ec4899"/>
+  <text x="40" y="385" text-anchor="middle" font-family="Arial, sans-serif" font-size="11" font-weight="bold" fill="white">7</text>
+  <line x1="720" y1="380" x2="540" y2="380" stroke="#ec4899" stroke-width="2" marker-end="url(#arrowPurple)"/>
+  <text x="630" y="375" text-anchor="middle" font-family="Arial, sans-serif" font-size="11" fill="#9d174d">回调 ?code=xxx</text>
+  
+  <!-- Step 8: Exchange Token -->
+  <rect x="30" y="410" width="20" height="20" rx="10" fill="#8b5cf6"/>
+  <text x="40" y="425" text-anchor="middle" font-family="Arial, sans-serif" font-size="11" font-weight="bold" fill="white">8</text>
+  <line x1="530" y1="420" x2="720" y2="420" stroke="#8b5cf6" stroke-width="2" marker-end="url(#arrowPurple)"/>
+  <text x="625" y="415" text-anchor="middle" font-family="Arial, sans-serif" font-size="11" fill="#6b21a8">用 code 换 token</text>
+  
+  <!-- Step 9: Return Token -->
+  <rect x="30" y="450" width="20" height="20" rx="10" fill="#ec4899"/>
+  <text x="40" y="465" text-anchor="middle" font-family="Arial, sans-serif" font-size="11" font-weight="bold" fill="white">9</text>
+  <line x1="720" y1="460" x2="540" y2="460" stroke="#ec4899" stroke-width="2" marker-end="url(#arrowPurple)"/>
+  <text x="630" y="455" text-anchor="middle" font-family="Arial, sans-serif" font-size="11" fill="#9d174d">返回 token + 用户信息</text>
+  
+  <!-- Step 10: Create User & Session -->
+  <rect x="30" y="490" width="20" height="20" rx="10" fill="#8b5cf6"/>
+  <text x="40" y="505" text-anchor="middle" font-family="Arial, sans-serif" font-size="11" font-weight="bold" fill="white">10</text>
+  <rect x="470" y="480" width="120" height="50" rx="4" fill="#f3e8ff" stroke="#8b5cf6" stroke-width="1"/>
+  <text x="530" y="500" text-anchor="middle" font-family="Arial, sans-serif" font-size="10" fill="#6b21a8">创建/更新用户</text>
+  <text x="530" y="515" text-anchor="middle" font-family="Arial, sans-serif" font-size="10" fill="#6b21a8">生成 Session</text>
+  <text x="530" y="528" text-anchor="middle" font-family="Arial, sans-serif" font-size="9" fill="#9333ea">生成 API Key</text>
+  
+  <!-- Step 11: Set Cookie -->
+  <rect x="30" y="545" width="20" height="20" rx="10" fill="#8b5cf6"/>
+  <text x="40" y="560" text-anchor="middle" font-family="Arial, sans-serif" font-size="11" font-weight="bold" fill="white">11</text>
+  <line x1="520" y1="555" x2="340" y2="555" stroke="#8b5cf6" stroke-width="2" marker-end="url(#arrowPurple)"/>
+  <text x="430" y="550" text-anchor="middle" font-family="Arial, sans-serif" font-size="11" fill="#6b21a8">Set-Cookie + 302</text>
+  
+  <!-- Step 12: Redirect to Home -->
+  <rect x="30" y="585" width="20" height="20" rx="10" fill="#22c55e"/>
+  <text x="40" y="600" text-anchor="middle" font-family="Arial, sans-serif" font-size="11" font-weight="bold" fill="white">12</text>
+  <line x1="330" y1="595" x2="140" y2="595" stroke="#22c55e" stroke-width="2" marker-end="url(#arrowGreen)"/>
+  <text x="235" y="590" text-anchor="middle" font-family="Arial, sans-serif" font-size="11" fill="#166534">跳转到首页</text>
+  
+  <!-- Final State -->
+  <rect x="60" y="620" width="200" height="35" rx="6" fill="#dcfce7" stroke="#22c55e" stroke-width="2"/>
+  <text x="160" y="642" text-anchor="middle" font-family="Arial, sans-serif" font-size="12" font-weight="bold" fill="#166534">✅ 登录成功，显示 API Key</text>
+  
+  <!-- Legend -->
+  <rect x="620" y="560" width="250" height="85" rx="8" fill="#f8fafc" stroke="#e2e8f0" stroke-width="1"/>
+  <text x="745" y="580" text-anchor="middle" font-family="Arial, sans-serif" font-size="11" font-weight="bold" fill="#475569">图例</text>
+  <line x1="640" y1="595" x2="680" y2="595" stroke="#3b82f6" stroke-width="2"/>
+  <text x="690" y="599" font-family="Arial, sans-serif" font-size="10" fill="#64748b">用户操作</text>
+  <line x1="640" y1="615" x2="680" y2="615" stroke="#8b5cf6" stroke-width="2"/>
+  <text x="690" y="619" font-family="Arial, sans-serif" font-size="10" fill="#64748b">服务端处理</text>
+  <line x1="640" y1="635" x2="680" y2="635" stroke="#ec4899" stroke-width="2"/>
+  <text x="690" y="639" font-family="Arial, sans-serif" font-size="10" fill="#64748b">飞书响应</text>
+</svg>

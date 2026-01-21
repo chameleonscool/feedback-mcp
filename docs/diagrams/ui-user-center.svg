@@ -1,0 +1,79 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 500 600">
+  <defs>
+    <linearGradient id="bgGrad2" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" style="stop-color:#f8fafc"/>
+      <stop offset="100%" style="stop-color:#f1f5f9"/>
+    </linearGradient>
+    <linearGradient id="headerGrad2" x1="0%" y1="0%" x2="100%" y2="0%">
+      <stop offset="0%" style="stop-color:#3b82f6"/>
+      <stop offset="100%" style="stop-color:#8b5cf6"/>
+    </linearGradient>
+    <filter id="cardShadow2" x="-5%" y="-5%" width="110%" height="115%">
+      <feDropShadow dx="0" dy="2" stdDeviation="4" flood-opacity="0.08"/>
+    </filter>
+  </defs>
+  
+  <!-- Background -->
+  <rect x="0" y="0" width="500" height="600" fill="url(#bgGrad2)"/>
+  
+  <!-- Header -->
+  <rect x="0" y="0" width="500" height="70" fill="url(#headerGrad2)"/>
+  <text x="30" y="42" font-family="Arial, sans-serif" font-size="18" font-weight="bold" fill="white">
+    🤖 AI Intent Center
+  </text>
+  
+  <!-- User Info -->
+  <circle cx="430" cy="35" r="20" fill="white" opacity="0.2"/>
+  <text x="430" y="42" text-anchor="middle" font-size="18">👤</text>
+  <text x="395" y="42" text-anchor="end" font-family="Arial, sans-serif" font-size="12" fill="white">张三</text>
+  
+  <!-- Main Content Area -->
+  <rect x="20" y="90" width="460" height="490" rx="12" fill="white" filter="url(#cardShadow2)"/>
+  
+  <!-- User Profile Section -->
+  <rect x="40" y="110" width="420" height="80" rx="8" fill="#f8fafc"/>
+  <circle cx="85" cy="150" r="25" fill="#dbeafe" stroke="#3b82f6" stroke-width="2"/>
+  <text x="85" y="158" text-anchor="middle" font-size="20">👤</text>
+  <text x="130" y="140" font-family="Arial, sans-serif" font-size="16" font-weight="bold" fill="#1e293b">张三</text>
+  <text x="130" y="160" font-family="Arial, sans-serif" font-size="12" fill="#64748b">zhangsan@company.com</text>
+  <text x="130" y="178" font-family="Arial, sans-serif" font-size="10" fill="#94a3b8">上次登录: 2026-01-21 10:30</text>
+  
+  <!-- Logout Button -->
+  <rect x="380" y="135" width="60" height="30" rx="6" fill="white" stroke="#e2e8f0" stroke-width="1"/>
+  <text x="410" y="155" text-anchor="middle" font-family="Arial, sans-serif" font-size="11" fill="#64748b">登出</text>
+  
+  <!-- API Key Section -->
+  <text x="40" y="220" font-family="Arial, sans-serif" font-size="14" font-weight="bold" fill="#1e293b">📋 您的 API Key</text>
+  <text x="40" y="240" font-family="Arial, sans-serif" font-size="11" fill="#64748b">用于配置 MCP 客户端</text>
+  
+  <rect x="40" y="255" width="420" height="45" rx="8" fill="#f1f5f9" stroke="#e2e8f0" stroke-width="1"/>
+  <text x="55" y="283" font-family="monospace" font-size="13" fill="#334155">uk_a1b2c3d4e5f6g7h8i9j0k1l2m3n4o5p6</text>
+  
+  <!-- Copy Button -->
+  <rect x="380" y="265" width="65" height="26" rx="4" fill="#3b82f6"/>
+  <text x="412" y="283" text-anchor="middle" font-family="Arial, sans-serif" font-size="11" fill="white">📋 复制</text>
+  
+  <!-- MCP Config Section -->
+  <text x="40" y="330" font-family="Arial, sans-serif" font-size="14" font-weight="bold" fill="#1e293b">📖 MCP 配置示例</text>
+  
+  <rect x="40" y="345" width="420" height="140" rx="8" fill="#1e293b"/>
+  <text x="55" y="370" font-family="monospace" font-size="11" fill="#94a3b8">// mcp_config.json</text>
+  <text x="55" y="390" font-family="monospace" font-size="11" fill="#f8fafc">{</text>
+  <text x="55" y="410" font-family="monospace" font-size="11" fill="#f8fafc">  "mcpServers": {</text>
+  <text x="55" y="430" font-family="monospace" font-size="11" fill="#f8fafc">    "user-intent": {</text>
+  <text x="55" y="450" font-family="monospace" font-size="11" fill="#fbbf24">      "env": { "USERINTENT_API_KEY": "uk_..." }</text>
+  <text x="55" y="470" font-family="monospace" font-size="11" fill="#f8fafc">    }</text>
+  <text x="55" y="490" font-family="monospace" font-size="11" fill="#f8fafc">  }</text>
+  
+  <!-- Regenerate Button -->
+  <rect x="40" y="505" width="180" height="40" rx="8" fill="white" stroke="#f59e0b" stroke-width="2"/>
+  <text x="130" y="530" text-anchor="middle" font-family="Arial, sans-serif" font-size="12" fill="#f59e0b">🔄 重新生成 API Key</text>
+  
+  <!-- Warning Text -->
+  <text x="240" y="530" font-family="Arial, sans-serif" font-size="10" fill="#94a3b8">⚠️ 重新生成后，旧的 Key 将失效</text>
+  
+  <!-- Status Indicator -->
+  <rect x="40" y="555" width="420" height="25" rx="4" fill="#dcfce7"/>
+  <circle cx="55" cy="567" r="5" fill="#22c55e"/>
+  <text x="70" y="572" font-family="Arial, sans-serif" font-size="11" fill="#166534">飞书连接正常 | 0 个待处理请求</text>
+</svg>
