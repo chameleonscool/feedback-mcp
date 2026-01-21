@@ -17,6 +17,11 @@ dependencies = [
     "python-multipart",
 ]
 
+[project.optional-dependencies]
+feishu = [
+    "lark_oapi>=1.0.0",
+]
+
 [project.scripts]
 user-intent-mcp = "server:main"
 

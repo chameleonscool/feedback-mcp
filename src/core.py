@@ -18,6 +18,15 @@ from fastmcp.utilities.types import Image
 from plyer import notification
 import threading
 
+# Import Feishu service (lazy loading to avoid import errors if lark_oapi not installed)
+feishu_service = None
+def get_feishu_service():
+    global feishu_service
+    if feishu_service is None:
+        from feishu import feishu_service as fs
+        feishu_service = fs
+    return feishu_service
+
 # --- Test Hooks ---
 class State:
     def __init__(self):
@@ -249,7 +258,7 @@ atexit.register(log_exit)
 def init_db():
     """Initialize the SQLite database."""
     with sqlite3.connect(DB_PATH) as conn:
-        # Create table if not exists
+        # Create intent_queue table if not exists
         conn.execute('''
             CREATE TABLE IF NOT EXISTS intent_queue (
                 id TEXT PRIMARY KEY,
@@ -270,6 +279,14 @@ def init_db():
             conn.execute('ALTER TABLE intent_queue ADD COLUMN completed_at TIMESTAMP')
         except sqlite3.OperationalError:
             pass  # Column already exists
+
+        # Create feishu_config table for persistent configuration storage
+        conn.execute('''
+            CREATE TABLE IF NOT EXISTS feishu_config (
+                key TEXT PRIMARY KEY,
+                value TEXT NOT NULL
+            )
+        ''')
     logger.info(f"Database initialized at {DB_PATH}")
 
 
@@ -310,7 +327,7 @@ mcp = FastMCP("User Intent Bridge")
 
 
 @mcp.tool
-def collect_user_intent(question: str) -> str | list:
+async def collect_user_intent(question: str) -> str | list:
     """
     Send a message to the user and collect their intent or response.
     
@@ -332,6 +349,43 @@ def collect_user_intent(question: str) -> str | list:
     timeout = DEFAULT_TIMEOUT
     request_id = str(uuid.uuid4())
     
+    # Check if Feishu mode is enabled and configured
+    fs = get_feishu_service()
+    if fs.is_configured():
+        return await _collect_via_feishu(fs, request_id, question, timeout)
+    
+    # Default: Web UI mode
+    return await _collect_via_web(request_id, question, timeout)
+
+
+async def _collect_via_feishu(fs, request_id: str, question: str, timeout: int) -> str:
+    """Collect user intent via Feishu bot."""
+    import asyncio
+    logger.info(f"Using Feishu mode for request {request_id}")
+    
+    # Send message to Feishu
+    if not fs.send_message(request_id, question):
+        logger.warning("Feishu send failed, falling back to web mode")
+        return await _collect_via_web(request_id, question, timeout)
+    
+    # Wait for reply from Feishu (use asyncio-friendly polling)
+    start_time = time.time()
+    while time.time() - start_time < timeout:
+        reply = fs.get_reply(request_id)
+        if reply:
+            logger.info(f"Feishu reply received for {request_id}: {reply[:50]}...")
+            return reply
+        await asyncio.sleep(1)
+    
+    # Timeout
+    fs.cancel_request(request_id)
+    return "Timeout: No response received from Feishu."
+
+
+async def _collect_via_web(request_id: str, question: str, timeout: int) -> str | list:
+    """Collect user intent via Web UI (async implementation for SSE mode)."""
+    import asyncio
+    
     # Store question in database
     with sqlite3.connect(DB_PATH) as conn:
         conn.execute(
@@ -348,7 +402,7 @@ def collect_user_intent(question: str) -> str | list:
     state.user_answer = None
     state.answer_event.clear()
     
-    # Poll for response
+    # Poll for response (async to not block event loop)
     start_time = time.time()
     while time.time() - start_time < timeout:
         # Native Test Hook: Check if test state was set manually
@@ -395,7 +449,8 @@ def collect_user_intent(question: str) -> str | list:
                     
                     return answer
         
-        time.sleep(1)
+        # Use asyncio.sleep to yield control back to event loop
+        await asyncio.sleep(1)
     
     # Timeout - cleanup
     with sqlite3.connect(DB_PATH) as conn:

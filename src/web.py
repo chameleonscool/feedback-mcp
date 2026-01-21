@@ -12,7 +12,7 @@ from fastapi.templating import Jinja2Templates
 from pydantic import BaseModel
 import os
 
-from core import DB_PATH, BASE_DIR
+from core import DB_PATH, BASE_DIR, get_feishu_service
 
 
 logger = logging.getLogger("user_intent_mcp")
@@ -130,3 +130,76 @@ async def delete_history_batch(data: DeleteHistoryModel):
             data.ids
         )
     return {"status": "deleted", "count": len(data.ids)}
+
+
+# --- Feishu API Endpoints ---
+class FeishuConfigModel(BaseModel):
+    enabled: Optional[bool] = None
+    app_id: Optional[str] = None
+    app_secret: Optional[str] = None
+    receive_id: Optional[str] = None
+    receive_id_type: Optional[str] = None
+
+
+@app.get("/api/feishu/config")
+async def get_feishu_config():
+    """Get current Feishu configuration (without secrets)."""
+    fs = get_feishu_service()
+    return fs.get_config()
+
+
+@app.post("/api/feishu/config")
+async def update_feishu_config(config: FeishuConfigModel):
+    """Update Feishu configuration."""
+    fs = get_feishu_service()
+    config_dict = {k: v for k, v in config.model_dump().items() if v is not None}
+    return fs.configure(config_dict)
+
+
+@app.post("/api/feishu/test")
+async def test_feishu_connection():
+    """Test Feishu connection by sending a test message."""
+    fs = get_feishu_service()
+    if not fs.is_available():
+        return {"status": "error", "message": "lark_oapi not installed"}
+    if not fs.is_configured():
+        return {"status": "error", "message": "Feishu not configured"}
+
+    # Send a test message with detailed error info
+    import uuid
+    test_id = str(uuid.uuid4())
+    result = fs.send_message_with_result(
+        test_id,
+        "🔔 Test message from AI Intent Center\n\nThis is a test to verify the Feishu connection is working."
+    )
+    fs.cancel_request(test_id)  # Don't wait for reply
+
+    if result.get("success"):
+        return {"status": "success", "message": result.get("message", "Test message sent successfully")}
+    else:
+        # Return detailed error information
+        error_code = result.get("code")
+        error_msg = result.get("message", "Unknown error")
+        error_detail = result.get("error", "")
+
+        # Map common error codes to helpful messages
+        error_help = {
+            "99991401": "用户不在可用范围内",
+            "99991402": "机器人不在该群组中",
+            "99991403": "机器人能力未激活",
+            "99991404": "没有权限发送消息",
+            "99991406": "receive_id 无效",
+            "99991603": "App ID 或 App Secret 无效",
+            "10003": "认证失败，请检查 App ID 和 App Secret",
+            "1000040346": "应用未发布或 App ID 无效",
+        }
+
+        help_text = error_help.get(str(error_code), "")
+
+        return {
+            "status": "error",
+            "message": error_msg,
+            "code": error_code,
+            "error": error_detail,
+            "help": help_text
+        }
