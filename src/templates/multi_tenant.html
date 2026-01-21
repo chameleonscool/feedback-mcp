@@ -1,0 +1,1107 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>AI Intent Center</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            --bg-primary: #0a0a0b;
+            --bg-secondary: #141416;
+            --bg-card: #1a1a1e;
+            --text-primary: #f5f5f5;
+            --text-secondary: #a1a1aa;
+            --text-muted: #71717a;
+            --accent-blue: #3b82f6;
+            --accent-purple: #8b5cf6;
+            --accent-green: #22c55e;
+            --accent-red: #ef4444;
+            --border-color: #27272a;
+            --shadow: 0 4px 24px rgba(0, 0, 0, 0.4);
+        }
+
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+        }
+
+        body {
+            font-family: 'Space Grotesk', -apple-system, BlinkMacSystemFont, sans-serif;
+            background: linear-gradient(135deg, var(--bg-primary) 0%, #0d0d14 100%);
+            color: var(--text-primary);
+            min-height: 100vh;
+            display: flex;
+            flex-direction: column;
+        }
+
+        /* Header */
+        .header {
+            background: var(--bg-secondary);
+            border-bottom: 1px solid var(--border-color);
+            padding: 16px 24px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .logo {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            font-size: 18px;
+            font-weight: 600;
+        }
+
+        .logo-icon {
+            width: 36px;
+            height: 36px;
+            background: linear-gradient(135deg, var(--accent-blue), var(--accent-purple));
+            border-radius: 10px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 20px;
+        }
+
+        .nav-links {
+            display: flex;
+            gap: 16px;
+        }
+
+        .nav-link {
+            color: var(--text-secondary);
+            text-decoration: none;
+            padding: 8px 16px;
+            border-radius: 8px;
+            transition: all 0.2s;
+        }
+
+        .nav-link:hover, .nav-link.active {
+            background: var(--bg-card);
+            color: var(--text-primary);
+        }
+
+        /* Main Container */
+        .main {
+            flex: 1;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            padding: 40px 24px;
+        }
+
+        /* Card */
+        .card {
+            background: var(--bg-card);
+            border: 1px solid var(--border-color);
+            border-radius: 16px;
+            padding: 40px;
+            width: 100%;
+            max-width: 480px;
+            box-shadow: var(--shadow);
+        }
+
+        .card-title {
+            font-size: 28px;
+            font-weight: 700;
+            margin-bottom: 8px;
+            text-align: center;
+        }
+
+        .card-subtitle {
+            color: var(--text-secondary);
+            text-align: center;
+            margin-bottom: 32px;
+        }
+
+        /* Form */
+        .form-group {
+            margin-bottom: 20px;
+        }
+
+        .form-label {
+            display: block;
+            font-size: 14px;
+            font-weight: 500;
+            margin-bottom: 8px;
+            color: var(--text-secondary);
+        }
+
+        .form-input {
+            width: 100%;
+            padding: 14px 16px;
+            font-size: 15px;
+            font-family: inherit;
+            background: var(--bg-secondary);
+            border: 1px solid var(--border-color);
+            border-radius: 10px;
+            color: var(--text-primary);
+            transition: all 0.2s;
+        }
+
+        .form-input:focus {
+            outline: none;
+            border-color: var(--accent-blue);
+            box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.2);
+        }
+
+        .form-input::placeholder {
+            color: var(--text-muted);
+        }
+
+        /* Buttons */
+        .btn {
+            width: 100%;
+            padding: 14px 24px;
+            font-size: 15px;
+            font-weight: 600;
+            font-family: inherit;
+            border: none;
+            border-radius: 10px;
+            cursor: pointer;
+            transition: all 0.2s;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 10px;
+        }
+
+        .btn-primary {
+            background: linear-gradient(135deg, var(--accent-blue), var(--accent-purple));
+            color: white;
+        }
+
+        .btn-primary:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 8px 24px rgba(59, 130, 246, 0.3);
+        }
+
+        .btn-secondary {
+            background: var(--bg-secondary);
+            color: var(--text-primary);
+            border: 1px solid var(--border-color);
+        }
+
+        .btn-secondary:hover {
+            background: var(--border-color);
+        }
+
+        .btn:disabled {
+            opacity: 0.6;
+            cursor: not-allowed;
+            transform: none !important;
+        }
+
+        /* Divider */
+        .divider {
+            display: flex;
+            align-items: center;
+            margin: 24px 0;
+            color: var(--text-muted);
+            font-size: 13px;
+        }
+
+        .divider::before, .divider::after {
+            content: '';
+            flex: 1;
+            height: 1px;
+            background: var(--border-color);
+        }
+
+        .divider span {
+            padding: 0 16px;
+        }
+
+        /* Alert */
+        .alert {
+            padding: 12px 16px;
+            border-radius: 10px;
+            margin-bottom: 20px;
+            font-size: 14px;
+            display: none;
+        }
+
+        .alert.show {
+            display: block;
+        }
+
+        .alert-error {
+            background: rgba(239, 68, 68, 0.15);
+            border: 1px solid rgba(239, 68, 68, 0.3);
+            color: #fca5a5;
+        }
+
+        .alert-success {
+            background: rgba(34, 197, 94, 0.15);
+            border: 1px solid rgba(34, 197, 94, 0.3);
+            color: #86efac;
+        }
+
+        /* Steps indicator */
+        .steps {
+            display: flex;
+            justify-content: center;
+            gap: 8px;
+            margin-bottom: 32px;
+        }
+
+        .step {
+            width: 32px;
+            height: 32px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 14px;
+            font-weight: 600;
+            background: var(--bg-secondary);
+            color: var(--text-muted);
+            border: 2px solid var(--border-color);
+        }
+
+        .step.active {
+            background: var(--accent-blue);
+            border-color: var(--accent-blue);
+            color: white;
+        }
+
+        .step.completed {
+            background: var(--accent-green);
+            border-color: var(--accent-green);
+            color: white;
+        }
+
+        .step-line {
+            width: 48px;
+            height: 2px;
+            background: var(--border-color);
+            align-self: center;
+        }
+
+        .step-line.completed {
+            background: var(--accent-green);
+        }
+
+        /* Admin Panel */
+        .admin-layout {
+            display: flex;
+            min-height: 100vh;
+        }
+
+        .sidebar {
+            width: 240px;
+            background: var(--bg-secondary);
+            border-right: 1px solid var(--border-color);
+            padding: 20px 0;
+            position: fixed;
+            left: 0;
+            top: 0;
+            bottom: 0;
+            display: flex;
+            flex-direction: column;
+            z-index: 100;
+        }
+        
+        .sidebar-logout {
+            margin-top: auto;
+            padding: 20px 16px;
+            border-top: 1px solid var(--border-color);
+        }
+        
+        .admin-content {
+            margin-left: 240px;
+        }
+
+        .sidebar-item {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            padding: 12px 24px;
+            color: var(--text-secondary);
+            text-decoration: none;
+            transition: all 0.2s;
+        }
+
+        .sidebar-item:hover, .sidebar-item.active {
+            background: var(--bg-card);
+            color: var(--text-primary);
+        }
+
+        .admin-content {
+            flex: 1;
+            padding: 32px;
+        }
+
+        .admin-header {
+            margin-bottom: 32px;
+        }
+
+        .admin-title {
+            font-size: 24px;
+            font-weight: 700;
+        }
+
+        .admin-subtitle {
+            color: var(--text-secondary);
+            margin-top: 4px;
+        }
+
+        /* Config Section */
+        .config-section {
+            background: var(--bg-card);
+            border: 1px solid var(--border-color);
+            border-radius: 12px;
+            padding: 24px;
+            margin-bottom: 24px;
+        }
+
+        .config-section-title {
+            font-size: 16px;
+            font-weight: 600;
+            margin-bottom: 20px;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        /* Status Badge */
+        .status-badge {
+            display: inline-flex;
+            align-items: center;
+            gap: 6px;
+            padding: 6px 12px;
+            border-radius: 20px;
+            font-size: 13px;
+            font-weight: 500;
+        }
+
+        .status-badge.online {
+            background: rgba(34, 197, 94, 0.15);
+            color: var(--accent-green);
+        }
+
+        .status-badge.offline {
+            background: rgba(239, 68, 68, 0.15);
+            color: var(--accent-red);
+        }
+
+        .status-dot {
+            width: 8px;
+            height: 8px;
+            border-radius: 50%;
+            background: currentColor;
+        }
+
+        /* User Card */
+        .user-card {
+            background: var(--bg-card);
+            border: 1px solid var(--border-color);
+            border-radius: 12px;
+            padding: 24px;
+            text-align: center;
+        }
+
+        .user-avatar {
+            width: 80px;
+            height: 80px;
+            border-radius: 50%;
+            background: linear-gradient(135deg, var(--accent-blue), var(--accent-purple));
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 32px;
+            margin: 0 auto 16px;
+        }
+
+        .user-name {
+            font-size: 20px;
+            font-weight: 600;
+            margin-bottom: 4px;
+        }
+
+        .user-email {
+            color: var(--text-secondary);
+            font-size: 14px;
+        }
+
+        /* API Key Box */
+        .api-key-box {
+            background: var(--bg-secondary);
+            border: 1px solid var(--border-color);
+            border-radius: 10px;
+            padding: 16px;
+            margin: 20px 0;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+        }
+
+        .api-key-value {
+            font-family: 'JetBrains Mono', monospace;
+            font-size: 14px;
+            color: var(--accent-blue);
+        }
+
+        .copy-btn {
+            padding: 8px 12px;
+            font-size: 13px;
+            background: var(--border-color);
+            border: none;
+            border-radius: 6px;
+            color: var(--text-primary);
+            cursor: pointer;
+            transition: all 0.2s;
+        }
+
+        .copy-btn:hover {
+            background: var(--accent-blue);
+        }
+
+        /* Code Block */
+        .code-block {
+            background: var(--bg-primary);
+            border-radius: 10px;
+            padding: 16px;
+            font-family: 'JetBrains Mono', monospace;
+            font-size: 13px;
+            overflow-x: auto;
+            margin: 16px 0;
+        }
+
+        .code-block code {
+            color: var(--text-secondary);
+        }
+
+        /* Loading spinner */
+        .spinner {
+            width: 20px;
+            height: 20px;
+            border: 2px solid transparent;
+            border-top-color: currentColor;
+            border-radius: 50%;
+            animation: spin 0.8s linear infinite;
+        }
+
+        @keyframes spin {
+            to { transform: rotate(360deg); }
+        }
+
+        /* Hidden */
+        .hidden {
+            display: none !important;
+        }
+
+        /* View containers */
+        .view {
+            display: none !important;
+        }
+
+        .view.active {
+            display: block !important;
+        }
+        
+        /* Loading view needs flex for centering */
+        #view-loading.active {
+            display: flex !important;
+        }
+        
+        /* Admin view needs flex for sidebar layout */
+        #view-admin.active {
+            display: flex !important;
+        }
+
+        /* Responsive */
+        @media (max-width: 768px) {
+            .admin-layout {
+                flex-direction: column;
+            }
+            
+            .sidebar {
+                width: 100%;
+                border-right: none;
+                border-bottom: 1px solid var(--border-color);
+            }
+            
+            .admin-content {
+                padding: 20px;
+            }
+        }
+    </style>
+</head>
+<body>
+    <!-- View: Loading -->
+    <div id="view-loading" class="view active">
+        <div class="main">
+            <div style="text-align: center;">
+                <div class="spinner" style="width: 40px; height: 40px; margin: 0 auto 20px;"></div>
+                <p style="color: var(--text-secondary);">加载中...</p>
+            </div>
+        </div>
+    </div>
+
+    <!-- View: Initialize -->
+    <div id="view-init" class="view">
+        <div class="main">
+            <div class="card">
+                <div class="steps">
+                    <div class="step active" id="step-1">1</div>
+                    <div class="step-line" id="line-1"></div>
+                    <div class="step" id="step-2">2</div>
+                    <div class="step-line" id="line-2"></div>
+                    <div class="step" id="step-3">✓</div>
+                </div>
+                
+                <h1 class="card-title">🚀 初始化设置</h1>
+                <p class="card-subtitle">首次使用需要完成初始化配置</p>
+                
+                <div id="alert-init" class="alert"></div>
+                
+                <!-- Step 1: Admin Password -->
+                <div id="init-step-1">
+                    <div class="form-group">
+                        <label class="form-label">管理员用户名</label>
+                        <input type="text" id="init-username" class="form-input" placeholder="请输入用户名（至少3位）" value="admin">
+                    </div>
+                    <div class="form-group">
+                        <label class="form-label">管理员密码</label>
+                        <input type="password" id="init-password" class="form-input" placeholder="请输入至少8位密码">
+                    </div>
+                    <div class="form-group">
+                        <label class="form-label">确认密码</label>
+                        <input type="password" id="init-password-confirm" class="form-input" placeholder="请再次输入密码">
+                    </div>
+                    <button class="btn btn-primary" onclick="initStep1Next()">
+                        下一步 →
+                    </button>
+                </div>
+                
+                <!-- Step 2: Feishu Config -->
+                <div id="init-step-2" class="hidden">
+                    <div class="form-group">
+                        <label class="form-label">飞书 App ID（可选）</label>
+                        <input type="text" id="init-app-id" class="form-input" placeholder="cli_xxxxxx">
+                    </div>
+                    <div class="form-group">
+                        <label class="form-label">飞书 App Secret（可选）</label>
+                        <input type="password" id="init-app-secret" class="form-input" placeholder="留空则跳过飞书配置">
+                    </div>
+                    <button class="btn btn-primary" onclick="initStep2Next()" id="btn-init-complete">
+                        完成设置
+                    </button>
+                    <button class="btn btn-secondary" style="margin-top: 12px;" onclick="initStep2Back()">
+                        ← 上一步
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- View: Login -->
+    <div id="view-login" class="view">
+        <div class="main">
+            <div class="card">
+                <h1 class="card-title">🤖 AI Intent Center</h1>
+                <p class="card-subtitle">AI 意图收集系统</p>
+                
+                <div id="alert-login" class="alert"></div>
+                
+                <button class="btn btn-primary" onclick="feishuLogin()" id="btn-feishu-login">
+                    <svg width="20" height="20" viewBox="0 0 24 24" fill="currentColor">
+                        <path d="M12 2L2 7l10 5 10-5-10-5zM2 17l10 5 10-5M2 12l10 5 10-5"/>
+                    </svg>
+                    使用飞书登录
+                </button>
+                
+                <div class="divider"><span>或</span></div>
+                
+                <button class="btn btn-secondary" onclick="showAdminLogin()">
+                    🔐 管理员登录
+                </button>
+                
+                <button class="btn btn-secondary" style="margin-top: 12px;" onclick="gotoWebUI()">
+                    💻 使用 Web UI（无需登录）
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <!-- View: Admin Login -->
+    <div id="view-admin-login" class="view">
+        <div class="main">
+            <div class="card">
+                <h1 class="card-title">🔐 管理员登录</h1>
+                <p class="card-subtitle">请输入管理员凭证</p>
+                
+                <div id="alert-admin-login" class="alert"></div>
+                
+                <form onsubmit="adminLogin(event)">
+                    <div class="form-group">
+                        <label class="form-label">用户名</label>
+                        <input type="text" id="admin-username" class="form-input" placeholder="请输入用户名" value="admin" required>
+                    </div>
+                    <div class="form-group">
+                        <label class="form-label">密码</label>
+                        <input type="password" id="admin-password" class="form-input" placeholder="请输入密码" required>
+                    </div>
+                    <button type="submit" class="btn btn-primary" id="btn-admin-login">
+                        登录
+                    </button>
+                </form>
+                
+                <button class="btn btn-secondary" style="margin-top: 12px;" onclick="showLogin()">
+                    ← 返回
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <!-- View: Admin Dashboard -->
+    <div id="view-admin" class="view">
+        <div class="admin-layout">
+            <div class="sidebar">
+                <div style="padding: 0 24px 20px; border-bottom: 1px solid var(--border-color);">
+                    <div class="logo">
+                        <div class="logo-icon">⚙️</div>
+                        <span>管理后台</span>
+                    </div>
+                </div>
+                <nav style="margin-top: 16px; flex: 1;">
+                    <a href="#" class="sidebar-item active" onclick="showAdminSection('config')">
+                        📊 系统配置
+                    </a>
+                    <a href="#" class="sidebar-item" onclick="showAdminSection('users')">
+                        👥 用户管理
+                    </a>
+                </nav>
+                <div class="sidebar-logout">
+                    <button class="btn btn-secondary" onclick="adminLogout()">
+                        🚪 退出登录
+                    </button>
+                </div>
+            </div>
+            <div class="admin-content">
+                <div class="admin-header">
+                    <h1 class="admin-title">系统配置</h1>
+                    <p class="admin-subtitle">配置飞书应用凭证和系统设置</p>
+                </div>
+                
+                <div id="alert-admin" class="alert"></div>
+                
+                <!-- System Status -->
+                <div class="config-section">
+                    <div class="config-section-title">
+                        📈 系统状态
+                        <span class="status-badge online" id="system-status">
+                            <span class="status-dot"></span>
+                            运行正常
+                        </span>
+                    </div>
+                    <div style="display: grid; grid-template-columns: repeat(3, 1fr); gap: 16px; color: var(--text-secondary);">
+                        <div>
+                            <div style="font-size: 24px; font-weight: 700; color: var(--text-primary);" id="stat-users">0</div>
+                            <div style="font-size: 13px;">注册用户</div>
+                        </div>
+                        <div>
+                            <div style="font-size: 24px; font-weight: 700; color: var(--text-primary);" id="stat-requests">0</div>
+                            <div style="font-size: 13px;">今日请求</div>
+                        </div>
+                        <div>
+                            <div style="font-size: 24px; font-weight: 700; color: var(--text-primary);">v2.0</div>
+                            <div style="font-size: 13px;">系统版本</div>
+                        </div>
+                    </div>
+                </div>
+                
+                <!-- Feishu Config -->
+                <div class="config-section">
+                    <div class="config-section-title">🔐 飞书应用配置</div>
+                    <div class="form-group">
+                        <label class="form-label">App ID</label>
+                        <input type="text" id="feishu-app-id" class="form-input" placeholder="cli_xxxxxx">
+                    </div>
+                    <div class="form-group">
+                        <label class="form-label">App Secret</label>
+                        <input type="password" id="feishu-app-secret" class="form-input" placeholder="输入新密钥以更新">
+                    </div>
+                    <div class="form-group">
+                        <label class="form-label">OAuth 回调地址</label>
+                        <input type="text" id="feishu-redirect-uri" class="form-input" readonly style="background: var(--bg-primary);">
+                    </div>
+                    <button class="btn btn-primary" style="width: auto;" onclick="saveFeishuConfig()">
+                        保存配置
+                    </button>
+                </div>
+                
+                <!-- Password Change -->
+                <div class="config-section">
+                    <div class="config-section-title">🔒 修改管理员密码</div>
+                    <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 16px;">
+                        <div class="form-group" style="margin-bottom: 0;">
+                            <label class="form-label">当前密码</label>
+                            <input type="password" id="old-password" class="form-input">
+                        </div>
+                        <div class="form-group" style="margin-bottom: 0;">
+                            <label class="form-label">新密码</label>
+                            <input type="password" id="new-password" class="form-input">
+                        </div>
+                    </div>
+                    <button class="btn btn-secondary" style="width: auto; margin-top: 16px;" onclick="changePassword()">
+                        修改密码
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- View: User Center -->
+    <div id="view-user" class="view">
+        <header class="header">
+            <div class="logo">
+                <div class="logo-icon">🤖</div>
+                <span>AI Intent Center</span>
+            </div>
+            <nav class="nav-links">
+                <a href="#" class="nav-link active">个人中心</a>
+                <a href="#" class="nav-link" onclick="adminLogout()">退出</a>
+            </nav>
+        </header>
+        <div class="main">
+            <div style="max-width: 600px; width: 100%;">
+                <div class="user-card">
+                    <div class="user-avatar" id="user-avatar">👤</div>
+                    <div class="user-name" id="user-name">用户名</div>
+                    <div class="user-email" id="user-email">email@example.com</div>
+                    
+                    <div style="margin-top: 32px; text-align: left;">
+                        <div class="config-section-title">📋 您的 API Key</div>
+                        <div class="api-key-box">
+                            <span class="api-key-value" id="user-api-key">uk_xxxxxxxxxxxxxxxx</span>
+                            <button class="copy-btn" onclick="copyApiKey()">复制</button>
+                        </div>
+                        
+                        <div class="config-section-title" style="margin-top: 24px;">📖 MCP 配置示例</div>
+                        <div class="code-block">
+                            <code>{
+  "mcpServers": {
+    "user-intent": {
+      "command": "uv",
+      "args": ["run", "user-intent-mcp"],
+      "env": {
+        "USERINTENT_API_KEY": "<span id="code-api-key">uk_xxx</span>"
+      }
+    }
+  }
+}</code>
+                        </div>
+                        
+                        <button class="btn btn-secondary" onclick="regenerateApiKey()">
+                            🔄 重新生成 API Key
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // State
+        let sessionToken = null;
+        let currentUser = null;
+        
+        // API Helper
+        async function api(method, endpoint, data = null, auth = false) {
+            const options = {
+                method,
+                headers: {
+                    'Content-Type': 'application/json'
+                }
+            };
+            
+            if (auth && sessionToken) {
+                options.headers['Authorization'] = `Bearer ${sessionToken}`;
+            }
+            
+            if (data) {
+                options.body = JSON.stringify(data);
+            }
+            
+            const response = await fetch(endpoint, options);
+            const json = await response.json();
+            
+            if (!response.ok) {
+                throw new Error(json.detail || '请求失败');
+            }
+            
+            return json;
+        }
+        
+        // Show/Hide Views
+        function showView(viewId) {
+            document.querySelectorAll('.view').forEach(v => {
+                v.classList.remove('active');
+                v.style.display = '';  // 清除内联 display 样式
+            });
+            const targetView = document.getElementById(viewId);
+            targetView.classList.add('active');
+            // 特殊处理 admin 布局
+            if (viewId === 'view-admin') {
+                targetView.style.display = 'flex';
+            }
+        }
+        
+        function showAlert(elementId, message, type = 'error') {
+            const alert = document.getElementById(elementId);
+            alert.textContent = message;
+            alert.className = `alert show alert-${type}`;
+            setTimeout(() => alert.classList.remove('show'), 5000);
+        }
+        
+        // Initialize
+        async function checkSystemStatus() {
+            try {
+                const status = await api('GET', '/api/system/status');
+                
+                if (!status.initialized) {
+                    showView('view-init');
+                } else {
+                    // Check if we have a session
+                    const savedToken = localStorage.getItem('adminSession');
+                    if (savedToken) {
+                        sessionToken = savedToken;
+                        try {
+                            // Verify session is still valid
+                            await api('GET', '/api/admin/users', null, true);
+                            showView('view-admin');
+                            loadAdminData();
+                            return;
+                        } catch (e) {
+                            localStorage.removeItem('adminSession');
+                            sessionToken = null;
+                        }
+                    }
+                    showView('view-login');
+                }
+            } catch (e) {
+                console.error('Failed to check status:', e);
+                showView('view-login');
+            }
+        }
+        
+        // Initialize Steps
+        function initStep1Next() {
+            const username = document.getElementById('init-username').value;
+            const password = document.getElementById('init-password').value;
+            const confirm = document.getElementById('init-password-confirm').value;
+            
+            if (username.length < 3) {
+                showAlert('alert-init', '用户名至少需要3个字符');
+                return;
+            }
+            
+            if (password.length < 8) {
+                showAlert('alert-init', '密码至少需要8个字符');
+                return;
+            }
+            
+            if (password !== confirm) {
+                showAlert('alert-init', '两次输入的密码不一致');
+                return;
+            }
+            
+            document.getElementById('init-step-1').classList.add('hidden');
+            document.getElementById('init-step-2').classList.remove('hidden');
+            document.getElementById('step-1').classList.remove('active');
+            document.getElementById('step-1').classList.add('completed');
+            document.getElementById('line-1').classList.add('completed');
+            document.getElementById('step-2').classList.add('active');
+        }
+        
+        function initStep2Back() {
+            document.getElementById('init-step-2').classList.add('hidden');
+            document.getElementById('init-step-1').classList.remove('hidden');
+            document.getElementById('step-2').classList.remove('active');
+            document.getElementById('step-1').classList.remove('completed');
+            document.getElementById('step-1').classList.add('active');
+            document.getElementById('line-1').classList.remove('completed');
+        }
+        
+        async function initStep2Next() {
+            const username = document.getElementById('init-username').value;
+            const password = document.getElementById('init-password').value;
+            const appId = document.getElementById('init-app-id').value;
+            const appSecret = document.getElementById('init-app-secret').value;
+            
+            const btn = document.getElementById('btn-init-complete');
+            btn.disabled = true;
+            btn.innerHTML = '<div class="spinner"></div> 初始化中...';
+            
+            try {
+                const data = { 
+                    admin_username: username,
+                    admin_password: password 
+                };
+                if (appId) data.feishu_app_id = appId;
+                if (appSecret) data.feishu_app_secret = appSecret;
+                
+                await api('POST', '/api/system/initialize', data);
+                
+                document.getElementById('step-2').classList.remove('active');
+                document.getElementById('step-2').classList.add('completed');
+                document.getElementById('line-2').classList.add('completed');
+                document.getElementById('step-3').classList.add('completed');
+                
+                showAlert('alert-init', '初始化成功！正在跳转...', 'success');
+                
+                setTimeout(() => {
+                    showView('view-login');
+                }, 1500);
+                
+            } catch (e) {
+                showAlert('alert-init', e.message);
+            } finally {
+                btn.disabled = false;
+                btn.innerHTML = '完成设置';
+            }
+        }
+        
+        // Admin Login
+        function showAdminLogin() {
+            showView('view-admin-login');
+        }
+        
+        function showLogin() {
+            showView('view-login');
+        }
+        
+        async function adminLogin(event) {
+            event.preventDefault();
+            
+            const username = document.getElementById('admin-username').value;
+            const password = document.getElementById('admin-password').value;
+            const btn = document.getElementById('btn-admin-login');
+            
+            btn.disabled = true;
+            btn.innerHTML = '<div class="spinner"></div> 登录中...';
+            
+            try {
+                const result = await api('POST', '/api/admin/login', { username, password });
+                sessionToken = result.session_token;
+                localStorage.setItem('adminSession', sessionToken);
+                localStorage.setItem('adminUsername', username);
+                
+                showView('view-admin');
+                loadAdminData();
+                
+            } catch (e) {
+                showAlert('alert-admin-login', e.message);
+            } finally {
+                btn.disabled = false;
+                btn.innerHTML = '登录';
+            }
+        }
+        
+        async function adminLogout() {
+            try {
+                await api('POST', '/api/admin/logout', null, true);
+            } catch (e) {
+                // Ignore
+            }
+            
+            sessionToken = null;
+            localStorage.removeItem('adminSession');
+            showView('view-login');
+        }
+        
+        // Admin Data
+        async function loadAdminData() {
+            try {
+                const users = await api('GET', '/api/admin/users', null, true);
+                document.getElementById('stat-users').textContent = users.users?.length || 0;
+                
+                // Set redirect URI
+                document.getElementById('feishu-redirect-uri').value = 
+                    window.location.origin + '/auth/feishu/callback';
+                    
+            } catch (e) {
+                console.error('Failed to load admin data:', e);
+            }
+        }
+        
+        async function saveFeishuConfig() {
+            const appId = document.getElementById('feishu-app-id').value;
+            const appSecret = document.getElementById('feishu-app-secret').value;
+            
+            if (!appId) {
+                showAlert('alert-admin', 'App ID 不能为空');
+                return;
+            }
+            
+            try {
+                await api('POST', '/api/admin/feishu/config', {
+                    app_id: appId,
+                    app_secret: appSecret || undefined,
+                    redirect_uri: document.getElementById('feishu-redirect-uri').value
+                }, true);
+                
+                showAlert('alert-admin', '飞书配置已保存', 'success');
+                
+            } catch (e) {
+                showAlert('alert-admin', e.message);
+            }
+        }
+        
+        async function changePassword() {
+            const oldPwd = document.getElementById('old-password').value;
+            const newPwd = document.getElementById('new-password').value;
+            
+            if (!oldPwd || !newPwd) {
+                showAlert('alert-admin', '请填写当前密码和新密码');
+                return;
+            }
+            
+            if (newPwd.length < 8) {
+                showAlert('alert-admin', '新密码至少需要8个字符');
+                return;
+            }
+            
+            try {
+                await api('POST', '/api/admin/change-password', {
+                    old_password: oldPwd,
+                    new_password: newPwd
+                }, true);
+                
+                showAlert('alert-admin', '密码修改成功，请重新登录', 'success');
+                
+                setTimeout(() => {
+                    adminLogout();
+                }, 2000);
+                
+            } catch (e) {
+                showAlert('alert-admin', e.message);
+            }
+        }
+        
+        // Feishu Login
+        function feishuLogin() {
+            window.location.href = '/auth/feishu/login';
+        }
+        
+        function gotoWebUI() {
+            window.location.href = '/webui';
+        }
+        
+        // User functions
+        function copyApiKey() {
+            const apiKey = document.getElementById('user-api-key').textContent;
+            navigator.clipboard.writeText(apiKey);
+            showAlert('alert-admin', '已复制到剪贴板', 'success');
+        }
+        
+        // Start
+        checkSystemStatus();
+    </script>
+</body>
+</html>

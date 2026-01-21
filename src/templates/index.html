@@ -22,8 +22,16 @@
         }
 
         .sidebar-item.active {
-            background: linear-gradient(to right, #eff6ff, #ffffff);
-            border-left: 4px solid #3b82f6;
+            background: linear-gradient(135deg, rgba(99, 102, 241, 0.15), rgba(139, 92, 246, 0.1));
+            border-left: 3px solid #8b5cf6;
+        }
+        
+        .sidebar-item {
+            border-left: 3px solid transparent;
+        }
+        
+        .sidebar-item:hover {
+            background: rgba(255, 255, 255, 0.05);
         }
 
         /* Markdown Styles */
@@ -93,55 +101,91 @@
     </style>
 </head>
 
-<body class="bg-gradient-to-br from-gray-100 to-gray-200 text-gray-800 h-screen flex overflow-hidden">
+<body class="bg-slate-50 text-gray-800 h-screen flex overflow-hidden">
 
-    <!-- Sidebar -->
-    <aside class="w-80 bg-white/80 backdrop-blur-xl border-r border-gray-200 flex flex-col shadow-xl z-10">
-        <div class="p-6 border-b border-gray-100">
-            <div class="flex justify-between items-center mb-4">
-                <h1
-                    class="text-xl font-bold bg-clip-text text-transparent bg-gradient-to-r from-blue-600 to-indigo-600 flex items-center gap-2">
-                    <svg class="w-6 h-6 text-blue-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
-                            d="M8 10h.01M12 10h.01M16 10h.01M9 16H5a2 2 0 01-2-2V6a2 2 0 012-2h14a2 2 0 012 2v8a2 2 0 01-2 2h-5l-5 5v-5z">
-                        </path>
-                    </svg>
-                    <span id="ui-title">AI Intent</span>
-                </h1>
+    <!-- Sidebar - 现代深色设计 -->
+    <aside class="w-80 bg-gradient-to-b from-slate-900 via-slate-800 to-slate-900 flex flex-col shadow-2xl z-10">
+        <!-- 顶部用户信息区域 -->
+        <div class="p-5 border-b border-slate-700/50">
+            <!-- 用户信息卡片 -->
+            <div id="user-info" class="flex items-center gap-3 p-3 bg-slate-800/50 rounded-2xl border border-slate-700/30 backdrop-blur">
+                <div id="user-avatar" class="w-12 h-12 rounded-xl bg-gradient-to-br from-violet-500 to-purple-600 flex items-center justify-center text-white font-bold text-lg shadow-lg shadow-violet-500/30 ring-2 ring-slate-700">
+                    👤
+                </div>
+                <div class="flex-1 min-w-0">
+                    <div id="user-name" class="font-semibold text-white truncate">Loading...</div>
+                    <div class="flex items-center gap-1.5 mt-1">
+                        <span id="user-status-dot" class="w-2 h-2 rounded-full bg-slate-500"></span>
+                        <span id="user-status" class="text-xs text-slate-400">Checking...</span>
+                    </div>
+                </div>
                 <button onclick="toggleLang()"
-                    class="px-2 py-0.5 text-[10px] font-bold border border-gray-200 rounded hover:bg-gray-50 transition-colors uppercase tracking-wider text-gray-500"
+                    class="p-2 text-xs font-medium text-slate-400 hover:text-white hover:bg-slate-700 rounded-lg transition-all"
                     id="lang-btn">
                     中文
                 </button>
             </div>
-            <div class="flex items-center space-x-2 mt-2">
-                <span class="relative flex h-2.5 w-2.5">
-                    <span id="status-ping"
-                        class="animate-ping absolute inline-flex h-full w-full rounded-full bg-green-400 opacity-75"></span>
-                    <span id="status-dot" class="relative inline-flex rounded-full h-2.5 w-2.5 bg-green-500"></span>
-                </span>
-                <span id="status-text" class="text-xs text-gray-500 font-medium">Service Connected</span>
+            
+            <!-- 状态指示器和飞书开关 -->
+            <div class="mt-4 flex items-center justify-between">
+                <div class="flex items-center gap-2">
+                    <span class="relative flex h-2.5 w-2.5">
+                        <span id="status-ping" class="animate-ping absolute inline-flex h-full w-full rounded-full bg-emerald-400 opacity-75"></span>
+                        <span id="status-dot" class="relative inline-flex rounded-full h-2.5 w-2.5 bg-emerald-500"></span>
+                    </span>
+                    <span id="status-text" class="text-xs text-slate-400 font-medium">Service Connected</span>
+                </div>
+                
+                <!-- 飞书通知开关 -->
+                <div id="feishu-toggle-container" class="hidden">
+                    <button id="feishu-toggle-btn" onclick="toggleFeishuNotify()"
+                        class="flex items-center gap-2 px-3 py-1.5 rounded-lg text-xs font-medium transition-all">
+                        <svg class="w-4 h-4" viewBox="0 0 24 24" fill="currentColor">
+                            <path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm-2 15l-5-5 1.41-1.41L10 14.17l7.59-7.59L19 8l-9 9z"/>
+                        </svg>
+                        <span id="feishu-toggle-text">飞书通知</span>
+                    </button>
+                </div>
+            </div>
+            
+            <!-- 标题 -->
+            <div class="mt-4 flex items-center gap-2">
+                <div class="w-8 h-8 rounded-lg bg-gradient-to-br from-blue-500 to-cyan-500 flex items-center justify-center shadow-lg shadow-blue-500/30">
+                    <svg class="w-5 h-5 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                            d="M8 10h.01M12 10h.01M16 10h.01M9 16H5a2 2 0 01-2-2V6a2 2 0 012-2h14a2 2 0 012 2v8a2 2 0 01-2 2h-5l-5 5v-5z">
+                        </path>
+                    </svg>
+                </div>
+                <h1 class="text-lg font-bold text-white" id="ui-title">AI Intent</h1>
             </div>
         </div>
 
-        <div class="flex-1 overflow-y-auto p-3 space-y-2">
+        <!-- 任务列表区域 -->
+        <div class="flex-1 overflow-y-auto p-4 space-y-3">
+            <!-- 待处理任务标题 -->
+            <div class="flex items-center gap-2 px-1 mb-2">
+                <div class="w-1.5 h-1.5 rounded-full bg-amber-400 animate-pulse"></div>
+                <span class="text-xs font-semibold text-slate-400 uppercase tracking-wider">Pending Tasks</span>
+            </div>
+            
             <!-- Pending Tasks -->
-            <div id="task-list">
+            <div id="task-list" class="space-y-2">
                 <!-- Task items will be injected here -->
             </div>
             
             <!-- History Section -->
-            <div id="history-section" class="hidden mt-4 pt-4 border-t border-gray-200">
-                <div class="flex items-center justify-between mb-2 px-1">
-                    <span id="history-title" class="text-xs font-semibold text-gray-400 uppercase tracking-wider">History</span>
+            <div id="history-section" class="hidden mt-6 pt-4 border-t border-slate-700/50">
+                <div class="flex items-center justify-between mb-3 px-1">
+                    <span id="history-title" class="text-xs font-semibold text-slate-500 uppercase tracking-wider">History</span>
                     <div class="flex items-center gap-2">
-                        <button onclick="toggleSelectAll()" class="text-[10px] text-gray-400 hover:text-blue-500 hidden" id="select-all-btn">
+                        <button onclick="toggleSelectAll()" class="text-[10px] text-slate-500 hover:text-slate-300 hidden transition-colors" id="select-all-btn">
                             <span id="select-all-text">All</span>
                         </button>
-                        <button onclick="deleteSelectedHistory()" class="text-[10px] text-red-400 hover:text-red-600 hidden" id="delete-history-btn">
+                        <button onclick="deleteSelectedHistory()" class="text-[10px] text-rose-400 hover:text-rose-300 hidden transition-colors" id="delete-history-btn">
                             <span id="delete-btn-text">Delete</span>
                         </button>
-                        <button onclick="toggleHistory()" class="text-[10px] text-gray-400 hover:text-blue-500" id="toggle-history-btn">
+                        <button onclick="toggleHistory()" class="text-[10px] text-slate-500 hover:text-slate-300 transition-colors" id="toggle-history-btn">
                             <span id="history-toggle-text">Hide</span>
                         </button>
                     </div>
@@ -152,157 +196,40 @@
             </div>
         </div>
 
-        <div class="p-4 border-t border-gray-100 flex flex-col items-center gap-2">
-            <!-- Feishu Mode Toggle -->
-            <button onclick="openFeishuSettings()"
-                class="text-xs text-gray-400 hover:text-blue-500 transition-colors flex items-center gap-1">
-                <svg class="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
-                        d="M8 12h.01M12 12h.01M16 12h.01M21 12c0 4.418-4.03 8-9 8a9.863 9.863 0 01-4.255-.949L3 20l1.395-3.72C3.512 15.042 3 13.574 3 12c0-4.418 4.03-8 9-8s9 3.582 9 8z">
-                    </path>
-                </svg>
-                <span id="ui-feishu-label">Feishu:</span> <span id="feishu-status" class="text-gray-500">Off</span>
-            </button>
+        <!-- 底部工具栏 -->
+        <div class="p-4 border-t border-slate-700/50 bg-slate-900/50">
+            <div class="flex items-center justify-between">
+                <button id="notify-btn" onclick="requestNotificationPermission()"
+                    class="text-xs text-slate-500 hover:text-slate-300 transition-colors flex items-center gap-1.5">
+                    <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                            d="M15 17h5l-1.405-1.405A2.032 2.032 0 0118 14.158V11a6.002 6.002 0 00-4-5.659V5a2 2 0 10-4 0v.341C7.67 6.165 6 8.388 6 11v3.159c0 .538-.214 1.055-.595 1.436L4 17h5m6 0v1a3 3 0 11-6 0v-1m6 0H9">
+                        </path>
+                    </svg>
+                    <span id="notify-status">Checking...</span>
+                </button>
+                <div id="sw-status" class="text-[10px] text-slate-600">SW: Loading</div>
+            </div>
             
-            <button id="notify-btn" onclick="requestNotificationPermission()"
-                class="text-xs text-gray-400 hover:text-blue-500 transition-colors flex items-center gap-1">
-                <svg class="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <!-- 返回登录按钮 -->
+            <a href="/"
+                class="mt-3 w-full flex items-center justify-center gap-2 px-4 py-2.5 text-sm text-slate-400 hover:text-white hover:bg-slate-700/50 rounded-xl transition-all">
+                <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
-                        d="M15 17h5l-1.405-1.405A2.032 2.032 0 0118 14.158V11a6.002 6.002 0 00-4-5.659V5a2 2 0 10-4 0v.341C7.67 6.165 6 8.388 6 11v3.159c0 .538-.214 1.055-.595 1.436L4 17h5m6 0v1a3 3 0 11-6 0v-1m6 0H9">
+                        d="M11 16l-4-4m0 0l4-4m-4 4h14m-5 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h7a3 3 0 013 3v1">
                     </path>
                 </svg>
-                <span id="ui-notify-label">Notification:</span> <span id="notify-status">Checking...</span>
-            </button>
-            <div id="sw-status" class="text-[10px] text-gray-300">SW: Loading</div>
+                <span id="ui-back-login">Back to Login</span>
+            </a>
         </div>
     </aside>
-    
-    <!-- Feishu Settings Modal -->
-    <div id="feishu-modal" class="fixed inset-0 bg-black/50 backdrop-blur-sm z-50 hidden flex items-center justify-center">
-        <div class="bg-white rounded-2xl shadow-2xl w-full max-w-md mx-4 overflow-hidden animate-fade-in">
-            <div class="bg-gradient-to-r from-blue-500 to-indigo-600 p-6">
-                <div class="flex items-center justify-between">
-                    <div class="flex items-center gap-3">
-                        <div class="w-10 h-10 bg-white/20 rounded-xl flex items-center justify-center">
-                            <svg class="w-6 h-6 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
-                                    d="M8 12h.01M12 12h.01M16 12h.01M21 12c0 4.418-4.03 8-9 8a9.863 9.863 0 01-4.255-.949L3 20l1.395-3.72C3.512 15.042 3 13.574 3 12c0-4.418 4.03-8 9-8s9 3.582 9 8z">
-                                </path>
-                            </svg>
-                        </div>
-                        <div>
-                            <h3 class="text-lg font-bold text-white" id="feishu-modal-title">Feishu Mode</h3>
-                            <p class="text-xs text-white/70" id="feishu-modal-subtitle">Configure Feishu bot integration</p>
-                        </div>
-                    </div>
-                    <button onclick="closeFeishuSettings()" class="text-white/70 hover:text-white transition-colors">
-                        <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path>
-                        </svg>
-                    </button>
-                </div>
-            </div>
-            
-            <div class="p-6 space-y-4">
-                <!-- SDK Status -->
-                <div id="feishu-sdk-warning" class="hidden bg-yellow-50 border border-yellow-200 rounded-lg p-3 text-sm text-yellow-700">
-                    <span class="font-medium">⚠️</span> <span id="feishu-sdk-msg">lark_oapi not installed</span>
-                </div>
-                
-                <!-- Enable Toggle -->
-                <div class="flex items-center justify-between">
-                    <label class="text-sm font-medium text-gray-700" id="feishu-enable-label">Enable Feishu Mode</label>
-                    <button id="feishu-toggle" onclick="toggleFeishuEnabled()" 
-                        class="relative w-12 h-6 rounded-full transition-colors bg-gray-200">
-                        <span id="feishu-toggle-dot" class="absolute left-1 top-1 w-4 h-4 bg-white rounded-full shadow transition-transform"></span>
-                    </button>
-                </div>
-                
-                <!-- Configuration Fields -->
-                <div id="feishu-config-fields" class="space-y-3 opacity-50 pointer-events-none">
-                    <div>
-                        <label class="block text-xs font-medium text-gray-500 mb-1">App ID</label>
-                        <div class="relative">
-                            <input type="text" id="feishu-app-id" placeholder="cli_xxxxxxxxxx"
-                                class="w-full px-3 py-2 pr-10 border border-gray-200 rounded-lg text-sm focus:ring-2 focus:ring-blue-500 focus:border-transparent outline-none">
-                            <button type="button" onclick="toggleFeishuAppIdVisibility()"
-                                class="absolute right-2 top-1/2 -translate-y-1/2 text-gray-400 hover:text-gray-600 focus:outline-none"
-                                title="显示/隐藏 App ID">
-                                <svg id="feishu-appid-eye-icon" xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" />
-                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z" />
-                                </svg>
-                                <svg id="feishu-appid-eye-off-icon" xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 hidden" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13.875 18.825A10.05 10.05 0 0112 19c-4.478 0-8.268-2.943-9.543-7a9.97 9.97 0 011.563-3.029m5.858.908a3 3 0 114.243 4.243M9.878 9.878l4.242 4.242M9.88 9.88l-3.29-3.29m7.532 7.532l3.29 3.29M3 3l3.59 3.59m0 0A9.953 9.953 0 0112 5c4.478 0 8.268 2.943 9.543 7a10.025 10.025 0 01-4.132 5.411m0 0L21 21" />
-                                </svg>
-                            </button>
-                        </div>
-                    </div>
-                    <div>
-                        <label class="block text-xs font-medium text-gray-500 mb-1">App Secret</label>
-                        <div class="relative">
-                            <input type="password" id="feishu-app-secret" placeholder="••••••••••••"
-                                class="w-full px-3 py-2 pr-10 border border-gray-200 rounded-lg text-sm focus:ring-2 focus:ring-blue-500 focus:border-transparent outline-none">
-                            <button type="button" onclick="toggleFeishuSecretVisibility()"
-                                class="absolute right-2 top-1/2 -translate-y-1/2 text-gray-400 hover:text-gray-600 focus:outline-none"
-                                title="显示/隐藏密码">
-                                <svg id="feishu-secret-eye-icon" xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" />
-                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z" />
-                                </svg>
-                                <svg id="feishu-secret-eye-off-icon" xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 hidden" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13.875 18.825A10.05 10.05 0 0112 19c-4.478 0-8.268-2.943-9.543-7a9.97 9.97 0 011.563-3.029m5.858.908a3 3 0 114.243 4.243M9.878 9.878l4.242 4.242M9.88 9.88l-3.29-3.29m7.532 7.532l3.29 3.29M3 3l3.59 3.59m0 0A9.953 9.953 0 0112 5c4.478 0 8.268 2.943 9.543 7a10.025 10.025 0 01-4.132 5.411m0 0L21 21" />
-                                </svg>
-                            </button>
-                        </div>
-                    </div>
-                    <div>
-                        <label class="block text-xs font-medium text-gray-500 mb-1">Receive ID</label>
-                        <input type="text" id="feishu-receive-id" placeholder="ou_xxxxxxxxxx or oc_xxxxxxxxxx"
-                            class="w-full px-3 py-2 border border-gray-200 rounded-lg text-sm focus:ring-2 focus:ring-blue-500 focus:border-transparent outline-none">
-                    </div>
-                    <div>
-                        <label class="block text-xs font-medium text-gray-500 mb-1">Receive ID Type</label>
-                        <select id="feishu-receive-id-type"
-                            class="w-full px-3 py-2 border border-gray-200 rounded-lg text-sm focus:ring-2 focus:ring-blue-500 focus:border-transparent outline-none bg-white">
-                            <option value="open_id">Open ID (ou_xxx)</option>
-                            <option value="user_id">User ID</option>
-                            <option value="union_id">Union ID</option>
-                            <option value="email">Email</option>
-                            <option value="chat_id">Chat ID (oc_xxx)</option>
-                        </select>
-                    </div>
-                </div>
-                
-                <!-- Connection Status -->
-                <div id="feishu-connection-status" class="hidden bg-green-50 border border-green-200 rounded-lg p-3 text-sm text-green-700">
-                    <span class="font-medium">✓</span> <span id="feishu-connection-msg">Connected</span>
-                </div>
-                
-                <!-- Actions -->
-                <div class="flex gap-3 pt-2">
-                    <button onclick="testFeishuConnection()" id="feishu-test-btn"
-                        class="flex-1 px-4 py-2 border border-gray-200 text-gray-600 rounded-lg text-sm font-medium hover:bg-gray-50 transition-colors disabled:opacity-50 disabled:cursor-not-allowed">
-                        <span id="feishu-test-text">Test Connection</span>
-                    </button>
-                    <button onclick="saveFeishuConfig()"
-                        class="flex-1 px-4 py-2 bg-gradient-to-r from-blue-600 to-indigo-600 text-white rounded-lg text-sm font-medium hover:from-blue-700 hover:to-indigo-700 transition-colors">
-                        <span id="feishu-save-text">Save</span>
-                    </button>
-                </div>
-                
-                <!-- Help Text -->
-                <div class="text-xs text-gray-400 pt-2 border-t border-gray-100">
-                    <p id="feishu-help-text">Create a Feishu bot app at <a href="https://open.feishu.cn" target="_blank" class="text-blue-500 hover:underline">open.feishu.cn</a> and enable "im:message" permissions.</p>
-                </div>
-            </div>
-        </div>
-    </div>
 
-    <!-- Main Content -->
-    <main class="flex-1 flex flex-col relative">
-        <div
-            class="absolute inset-0 bg-gradient-to-tr from-blue-50/50 via-white/30 to-purple-50/50 pointer-events-none">
+    <!-- Main Content - 现代化设计 -->
+    <main class="flex-1 flex flex-col relative bg-gradient-to-br from-slate-50 via-white to-blue-50/30">
+        <!-- 装饰性背景 -->
+        <div class="absolute inset-0 overflow-hidden pointer-events-none">
+            <div class="absolute -top-40 -right-40 w-80 h-80 bg-gradient-to-br from-violet-200/30 to-purple-200/30 rounded-full blur-3xl"></div>
+            <div class="absolute -bottom-40 -left-40 w-80 h-80 bg-gradient-to-br from-blue-200/30 to-cyan-200/30 rounded-full blur-3xl"></div>
         </div>
 
         <div class="flex-1 overflow-y-auto p-8 relative z-0 flex items-start justify-center" id="main-view">
@@ -350,23 +277,11 @@
                 delete_selected: "Delete",
                 select_all: "All",
                 deselect_all: "None",
-                // Feishu
-                feishu_label: "Feishu:",
-                feishu_on: "On",
-                feishu_off: "Off",
-                feishu_modal_title: "Feishu Mode",
-                feishu_modal_subtitle: "Configure Feishu bot integration",
-                feishu_enable_label: "Enable Feishu Mode",
-                feishu_test: "Test Connection",
-                feishu_save: "Save",
-                feishu_help: "Create a Feishu bot app at open.feishu.cn and enable \"im:message\" permissions.",
-                feishu_sdk_missing: "lark_oapi not installed. Run: pip install lark_oapi",
-                feishu_connected: "WebSocket connected",
-                feishu_disconnected: "Not connected",
-                feishu_test_success: "Test message sent successfully!",
-                feishu_test_fail: "Failed to send test message",
-                feishu_save_success: "Configuration saved",
-                feishu_save_fail: "Failed to save configuration"
+                back_login: "Back to Login",
+                user_logged_in: "Logged in",
+                user_not_logged_in: "Not logged in",
+                user_guest_mode: "Guest Mode",
+                user_loading: "Loading..."
             },
             zh: {
                 title: "AI 意图采集中心",
@@ -405,23 +320,11 @@
                 delete_selected: "删除",
                 select_all: "全选",
                 deselect_all: "取消",
-                // Feishu
-                feishu_label: "飞书模式:",
-                feishu_on: "已开启",
-                feishu_off: "已关闭",
-                feishu_modal_title: "飞书模式",
-                feishu_modal_subtitle: "配置飞书机器人集成",
-                feishu_enable_label: "启用飞书模式",
-                feishu_test: "测试连接",
-                feishu_save: "保存",
-                feishu_help: "在 open.feishu.cn 创建飞书机器人应用，并开启 \"im:message\" 权限。",
-                feishu_sdk_missing: "lark_oapi 未安装。请运行: pip install lark_oapi",
-                feishu_connected: "WebSocket 已连接",
-                feishu_disconnected: "未连接",
-                feishu_test_success: "测试消息发送成功！",
-                feishu_test_fail: "测试消息发送失败",
-                feishu_save_success: "配置已保存",
-                feishu_save_fail: "保存配置失败"
+                back_login: "返回登录",
+                user_logged_in: "已登录",
+                user_not_logged_in: "未登录",
+                user_guest_mode: "访客模式",
+                user_loading: "加载中..."
             }
         };
 
@@ -443,22 +346,20 @@
             document.documentElement.lang = currentLang === 'en' ? 'en' : 'zh-CN';
             document.title = t('title');
             document.getElementById('ui-title').innerText = t('title');
-            document.getElementById('ui-notify-label').innerText = t('notify_label');
-            document.getElementById('ui-feishu-label').innerText = t('feishu_label');
+            document.getElementById('ui-back-login').innerText = t('back_login');
             document.getElementById('lang-btn').innerText = currentLang === 'en' ? '中文' : 'English';
 
             // Update status text based on current state
             const statusDot = document.getElementById('status-dot');
             const statusText = document.getElementById('status-text');
-            if (statusDot.classList.contains('bg-green-500')) {
+            if (statusDot && statusDot.classList.contains('bg-emerald-500')) {
                 statusText.innerText = t('status_connected');
-            } else {
+            } else if (statusText) {
                 statusText.innerText = t('status_disconnected');
             }
 
             updateNotifyStatus();
             updateSWStatus();
-            updateFeishuStatus();
         }
 
         let tasks = [];
@@ -469,6 +370,127 @@
         let imageCache = {};
         let textCache = {};
         let selectedHistoryIds = new Set();  // For multi-select delete
+        
+        // 从 URL 获取 api_key（用于消息隔离）
+        const urlParams = new URLSearchParams(window.location.search);
+        const apiKey = urlParams.get('api_key');
+        
+        // 用户信息
+        let currentUser = null;
+        let feishuNotifyEnabled = false;  // 飞书通知开关状态
+        
+        // 获取用户信息
+        async function fetchUserInfo() {
+            const userNameEl = document.getElementById('user-name');
+            const userStatusEl = document.getElementById('user-status');
+            const userStatusDotEl = document.getElementById('user-status-dot');
+            const userAvatarEl = document.getElementById('user-avatar');
+            const feishuToggleContainer = document.getElementById('feishu-toggle-container');
+            
+            if (!apiKey) {
+                // 无登录模式 - 访客样式
+                currentUser = null;
+                userNameEl.innerText = t('user_guest_mode');
+                userStatusEl.innerText = t('user_not_logged_in');
+                userStatusEl.classList.remove('text-emerald-400');
+                userStatusEl.classList.add('text-slate-500');
+                userStatusDotEl.classList.remove('bg-emerald-500');
+                userStatusDotEl.classList.add('bg-slate-500');
+                userAvatarEl.innerHTML = '👤';
+                userAvatarEl.className = 'w-12 h-12 rounded-xl bg-gradient-to-br from-slate-600 to-slate-700 flex items-center justify-center text-white font-bold text-lg shadow-lg ring-2 ring-slate-700';
+                feishuToggleContainer.classList.add('hidden');
+                return;
+            }
+            
+            try {
+                const response = await fetch(`/api/user/info?api_key=${encodeURIComponent(apiKey)}`);
+                if (response.ok) {
+                    currentUser = await response.json();
+                    userNameEl.innerText = currentUser.name || 'User';
+                    userStatusEl.innerText = t('user_logged_in');
+                    userStatusEl.classList.remove('text-slate-500');
+                    userStatusEl.classList.add('text-emerald-400');
+                    userStatusDotEl.classList.remove('bg-slate-500');
+                    userStatusDotEl.classList.add('bg-emerald-500');
+                    
+                    // 显示飞书通知开关（登录用户可用）
+                    feishuToggleContainer.classList.remove('hidden');
+                    await loadFeishuNotifyStatus();
+                    
+                    // 显示头像或首字母
+                    if (currentUser.avatar_url) {
+                        userAvatarEl.innerHTML = `<img src="${currentUser.avatar_url}" class="w-12 h-12 rounded-xl object-cover" alt="avatar" />`;
+                        userAvatarEl.className = 'w-12 h-12 rounded-xl shadow-lg ring-2 ring-slate-700 overflow-hidden';
+                    } else {
+                        const initial = (currentUser.name || 'U').charAt(0).toUpperCase();
+                        userAvatarEl.innerHTML = initial;
+                        userAvatarEl.className = 'w-12 h-12 rounded-xl bg-gradient-to-br from-violet-500 to-purple-600 flex items-center justify-center text-white font-bold text-lg shadow-lg shadow-violet-500/30 ring-2 ring-slate-700';
+                    }
+                } else {
+                    // API Key 无效 - 访客样式
+                    currentUser = null;
+                    userNameEl.innerText = t('user_guest_mode');
+                    userStatusEl.innerText = t('user_not_logged_in');
+                    userStatusEl.classList.remove('text-emerald-400');
+                    userStatusEl.classList.add('text-slate-500');
+                    userStatusDotEl.classList.remove('bg-emerald-500');
+                    userStatusDotEl.classList.add('bg-slate-500');
+                    userAvatarEl.innerHTML = '👤';
+                    userAvatarEl.className = 'w-12 h-12 rounded-xl bg-gradient-to-br from-slate-600 to-slate-700 flex items-center justify-center text-white font-bold text-lg shadow-lg ring-2 ring-slate-700';
+                    feishuToggleContainer.classList.add('hidden');
+                }
+            } catch (e) {
+                console.error('Failed to fetch user info:', e);
+                userNameEl.innerText = t('user_guest_mode');
+                userStatusEl.innerText = t('user_not_logged_in');
+            }
+        }
+        
+        // 加载飞书通知状态
+        async function loadFeishuNotifyStatus() {
+            if (!apiKey) return;
+            try {
+                const response = await fetch(`/api/user/feishu-notify?api_key=${encodeURIComponent(apiKey)}`);
+                if (response.ok) {
+                    const data = await response.json();
+                    feishuNotifyEnabled = data.enabled;
+                    updateFeishuToggleUI();
+                }
+            } catch (e) {
+                console.error('Failed to load feishu notify status:', e);
+            }
+        }
+        
+        // 切换飞书通知
+        async function toggleFeishuNotify() {
+            if (!apiKey) return;
+            try {
+                const response = await fetch(`/api/user/feishu-notify?api_key=${encodeURIComponent(apiKey)}`, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ enabled: !feishuNotifyEnabled })
+                });
+                if (response.ok) {
+                    feishuNotifyEnabled = !feishuNotifyEnabled;
+                    updateFeishuToggleUI();
+                }
+            } catch (e) {
+                console.error('Failed to toggle feishu notify:', e);
+            }
+        }
+        
+        // 更新飞书开关 UI
+        function updateFeishuToggleUI() {
+            const btn = document.getElementById('feishu-toggle-btn');
+            const text = document.getElementById('feishu-toggle-text');
+            if (feishuNotifyEnabled) {
+                btn.className = 'flex items-center gap-2 px-3 py-1.5 rounded-lg text-xs font-medium transition-all bg-emerald-500/20 text-emerald-400 border border-emerald-500/30';
+                text.innerText = '飞书通知 ON';
+            } else {
+                btn.className = 'flex items-center gap-2 px-3 py-1.5 rounded-lg text-xs font-medium transition-all bg-slate-700/50 text-slate-400 border border-slate-600/30 hover:bg-slate-700';
+                text.innerText = '飞书通知 OFF';
+            }
+        }
 
         // --- Notification ---
         function updateNotifyStatus() {
@@ -555,7 +577,9 @@
         // --- API & State ---
         async function poll() {
             try {
-                const response = await fetch('/api/poll');
+                // 携带 api_key 参数（如果有的话）实现消息隔离
+                const pollUrl = apiKey ? `/api/poll?api_key=${encodeURIComponent(apiKey)}` : '/api/poll';
+                const response = await fetch(pollUrl);
                 const newTasks = await response.json();
 
                 const oldIds = new Set(tasks.map(t => t.id));
@@ -654,18 +678,27 @@
             const container = document.getElementById('task-list');
 
             if (tasks.length === 0) {
-                container.innerHTML = `<div class="text-center mt-10 text-gray-400 text-sm"><p>${t('no_tasks')}</p></div>`;
+                container.innerHTML = `
+                    <div class="text-center py-12 px-4">
+                        <div class="w-16 h-16 mx-auto mb-4 rounded-2xl bg-slate-700/50 flex items-center justify-center">
+                            <svg class="w-8 h-8 text-slate-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M20 13V6a2 2 0 00-2-2H6a2 2 0 00-2 2v7m16 0v5a2 2 0 01-2 2H6a2 2 0 01-2-2v-5m16 0h-2.586a1 1 0 00-.707.293l-2.414 2.414a1 1 0 01-.707.293h-3.172a1 1 0 01-.707-.293l-2.414-2.414A1 1 0 006.586 13H4"></path>
+                            </svg>
+                        </div>
+                        <p class="text-slate-500 text-sm font-medium">${t('no_tasks')}</p>
+                        <p class="text-slate-600 text-xs mt-1">${t('wait_ai')}</p>
+                    </div>`;
                 return;
             }
 
             container.innerHTML = tasks.map(task => `
                 <div onclick="selectTask('${task.id}')" 
-                     class="sidebar-item p-4 rounded-xl cursor-pointer transition-all duration-200 hover:bg-white hover:shadow-sm border border-transparent hover:border-gray-100 ${task.id === selectedTaskId ? 'active bg-white shadow-sm ring-1 ring-blue-100' : 'text-gray-600'}">
-                    <div class="flex justify-between items-start mb-1">
-                        <span class="text-[10px] font-bold uppercase tracking-wider ${task.id === selectedTaskId ? 'text-blue-600' : 'text-gray-400'}">${t('ticket')} #${task.id.substring(0, 6)}</span>
-                        <span class="text-[10px] text-gray-400">${t('just_now')}</span>
+                     class="sidebar-item p-4 rounded-xl cursor-pointer transition-all duration-200 ${task.id === selectedTaskId ? 'active' : ''}">
+                    <div class="flex justify-between items-start mb-2">
+                        <span class="text-[10px] font-bold uppercase tracking-wider ${task.id === selectedTaskId ? 'text-violet-400' : 'text-slate-500'}">${t('ticket')} #${task.id.substring(0, 6)}</span>
+                        <span class="text-[10px] ${task.id === selectedTaskId ? 'text-slate-400' : 'text-slate-600'}">${t('just_now')}</span>
                     </div>
-                    <p class="text-sm font-medium line-clamp-2 leading-relaxed ${task.id === selectedTaskId ? 'text-gray-900' : 'text-gray-500'}">
+                    <p class="text-sm font-medium line-clamp-2 leading-relaxed ${task.id === selectedTaskId ? 'text-white' : 'text-slate-400'}">
                         ${task.question}
                     </p>
                 </div>
@@ -1001,266 +1034,12 @@
             }
         }
 
-        // --- Feishu Functions ---
-        let feishuConfig = {
-            enabled: false,
-            app_id: '',
-            receive_id: '',
-            receive_id_type: 'open_id',
-            available: false,
-            connected: false
-        };
-
-        async function fetchFeishuConfig() {
-            try {
-                const response = await fetch('/api/feishu/config');
-                feishuConfig = await response.json();
-                updateFeishuStatus();
-            } catch (e) {
-                console.error('Failed to fetch Feishu config:', e);
-            }
-        }
-
-        function updateFeishuStatus() {
-            const statusEl = document.getElementById('feishu-status');
-            if (feishuConfig.enabled && feishuConfig.connected) {
-                statusEl.innerText = t('feishu_on');
-                statusEl.className = 'text-green-500 font-bold';
-            } else if (feishuConfig.enabled) {
-                statusEl.innerText = t('feishu_on');
-                statusEl.className = 'text-yellow-500 font-bold';
-            } else {
-                statusEl.innerText = t('feishu_off');
-                statusEl.className = 'text-gray-500';
-            }
-        }
-
-        async function openFeishuSettings() {
-            const modal = document.getElementById('feishu-modal');
-            modal.classList.remove('hidden');
-            
-            // Fetch latest config before showing modal
-            await fetchFeishuConfig();
-            
-            // Update modal content with current config
-            updateFeishuModal();
-            
-            // Update i18n
-            document.getElementById('feishu-modal-title').innerText = t('feishu_modal_title');
-            document.getElementById('feishu-modal-subtitle').innerText = t('feishu_modal_subtitle');
-            document.getElementById('feishu-enable-label').innerText = t('feishu_enable_label');
-            document.getElementById('feishu-test-text').innerText = t('feishu_test');
-            document.getElementById('feishu-save-text').innerText = t('feishu_save');
-            document.getElementById('feishu-help-text').innerHTML = t('feishu_help').replace('open.feishu.cn', '<a href="https://open.feishu.cn" target="_blank" class="text-blue-500 hover:underline">open.feishu.cn</a>');
-        }
-
-        function closeFeishuSettings() {
-            const modal = document.getElementById('feishu-modal');
-            modal.classList.add('hidden');
-        }
-
-        function updateFeishuModal() {
-            // SDK warning
-            const sdkWarning = document.getElementById('feishu-sdk-warning');
-            if (!feishuConfig.available) {
-                sdkWarning.classList.remove('hidden');
-                document.getElementById('feishu-sdk-msg').innerText = t('feishu_sdk_missing');
-            } else {
-                sdkWarning.classList.add('hidden');
-            }
-            
-            // Toggle state
-            const toggle = document.getElementById('feishu-toggle');
-            const toggleDot = document.getElementById('feishu-toggle-dot');
-            const configFields = document.getElementById('feishu-config-fields');
-            
-            if (feishuConfig.enabled) {
-                toggle.classList.remove('bg-gray-200');
-                toggle.classList.add('bg-blue-500');
-                toggleDot.classList.add('translate-x-6');
-                configFields.classList.remove('opacity-50', 'pointer-events-none');
-            } else {
-                toggle.classList.add('bg-gray-200');
-                toggle.classList.remove('bg-blue-500');
-                toggleDot.classList.remove('translate-x-6');
-                configFields.classList.add('opacity-50', 'pointer-events-none');
-            }
-            
-            // Connection status
-            const connStatus = document.getElementById('feishu-connection-status');
-            const connMsg = document.getElementById('feishu-connection-msg');
-            if (feishuConfig.enabled && feishuConfig.connected) {
-                connStatus.classList.remove('hidden');
-                connMsg.innerText = t('feishu_connected');
-            } else if (feishuConfig.enabled) {
-                connStatus.classList.remove('hidden');
-                connStatus.classList.remove('bg-green-50', 'border-green-200', 'text-green-700');
-                connStatus.classList.add('bg-yellow-50', 'border-yellow-200', 'text-yellow-700');
-                connMsg.innerText = t('feishu_disconnected');
-            } else {
-                connStatus.classList.add('hidden');
-            }
-
-            // Fill form fields (don't show full secrets by default)
-            // Store full values but show masked versions
-            const appIdInput = document.getElementById('feishu-app-id');
-            // Always store the full app_id value
-            appIdInput.dataset.fullValue = feishuConfig.app_id || '';
-            // Mask app_id by default (show only first 8 chars + ...)
-            if (feishuConfig.app_id && feishuConfig.app_id.length > 8) {
-                appIdInput.type = 'password';
-                appIdInput.value = feishuConfig.app_id;
-                appIdInput.dataset.masked = 'true';
-            } else {
-                appIdInput.type = 'text';
-                appIdInput.value = feishuConfig.app_id || '';
-                appIdInput.dataset.masked = 'false';
-            }
-
-            document.getElementById('feishu-receive-id').value = feishuConfig.receive_id || '';
-            document.getElementById('feishu-receive-id-type').value = feishuConfig.receive_id_type || 'open_id';
-        }
-
-        function toggleFeishuEnabled() {
-            feishuConfig.enabled = !feishuConfig.enabled;
-            updateFeishuModal();
-        }
-
-        function toggleFeishuAppIdVisibility() {
-            const input = document.getElementById('feishu-app-id');
-            const eyeIcon = document.getElementById('feishu-appid-eye-icon');
-            const eyeOffIcon = document.getElementById('feishu-appid-eye-off-icon');
-
-            if (input.type === 'password') {
-                input.type = 'text';
-                eyeIcon.classList.add('hidden');
-                eyeOffIcon.classList.remove('hidden');
-                input.dataset.masked = 'false';
-            } else {
-                input.type = 'password';
-                eyeIcon.classList.remove('hidden');
-                eyeOffIcon.classList.add('hidden');
-                input.dataset.masked = 'true';
-            }
-        }
-
-        function toggleFeishuSecretVisibility() {
-            const input = document.getElementById('feishu-app-secret');
-            const eyeIcon = document.getElementById('feishu-secret-eye-icon');
-            const eyeOffIcon = document.getElementById('feishu-secret-eye-off-icon');
-
-            if (input.type === 'password') {
-                input.type = 'text';
-                eyeIcon.classList.add('hidden');
-                eyeOffIcon.classList.remove('hidden');
-            } else {
-                input.type = 'password';
-                eyeIcon.classList.remove('hidden');
-                eyeOffIcon.classList.add('hidden');
-            }
-        }
-
-        async function saveFeishuConfig() {
-            // Get App ID - use full value from dataset to avoid password masking issues
-            const appIdInput = document.getElementById('feishu-app-id');
-            const app_id = appIdInput.dataset.fullValue || appIdInput.value;
-
-            const config = {
-                enabled: feishuConfig.enabled,
-                app_id: app_id,
-                app_secret: document.getElementById('feishu-app-secret').value || undefined,
-                receive_id: document.getElementById('feishu-receive-id').value,
-                receive_id_type: document.getElementById('feishu-receive-id-type').value
-            };
-
-            // Remove undefined values
-            Object.keys(config).forEach(key => config[key] === undefined && delete config[key]);
-
-            try {
-
-                const response = await fetch('/api/feishu/config', {
-                    method: 'POST',
-                    headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify(config)
-                });
-                const result = await response.json();
-                
-                if (result.status === 'success') {
-                    // Refresh config
-                    await fetchFeishuConfig();
-                    updateFeishuModal();
-                    showToast(t('feishu_save_success'), 'success');
-                } else {
-                    showToast(result.message || t('feishu_save_fail'), 'error');
-                }
-            } catch (e) {
-                showToast(t('feishu_save_fail'), 'error');
-            }
-        }
-
-        async function testFeishuConnection() {
-            const testBtn = document.getElementById('feishu-test-btn');
-            testBtn.disabled = true;
-            testBtn.innerText = '...';
-
-            try {
-                const response = await fetch('/api/feishu/test', { method: 'POST' });
-                const result = await response.json();
-
-                if (result.status === 'success') {
-                    showToast(t('feishu_test_success'), 'success');
-                } else {
-                    // Build detailed error message
-                    let errorMsg = result.message || t('feishu_test_fail');
-                    if (result.code) {
-                        errorMsg += ` (错误码: ${result.code})`;
-                    }
-                    if (result.help) {
-                        errorMsg += `\n提示: ${result.help}`;
-                    }
-                    showToast(errorMsg, 'error');
-                }
-            } catch (e) {
-                showToast(t('feishu_test_fail'), 'error');
-            } finally {
-                testBtn.disabled = false;
-                testBtn.innerText = t('feishu_test');
-            }
-        }
-
-        function showToast(message, type = 'info') {
-            // Create toast element
-            const toast = document.createElement('div');
-            toast.className = `fixed bottom-4 right-4 px-4 py-2 rounded-lg shadow-lg text-sm font-medium z-50 animate-fade-in ${
-                type === 'success' ? 'bg-green-500 text-white' : 
-                type === 'error' ? 'bg-red-500 text-white' : 
-                'bg-gray-800 text-white'
-            }`;
-            toast.innerText = message;
-            document.body.appendChild(toast);
-            
-            // Remove after 3 seconds
-            setTimeout(() => {
-                toast.style.opacity = '0';
-                toast.style.transition = 'opacity 0.3s';
-                setTimeout(() => toast.remove(), 300);
-            }, 3000);
-        }
-
-        // Close modal on background click
-        document.getElementById('feishu-modal').addEventListener('click', function(e) {
-            if (e.target === this) {
-                closeFeishuSettings();
-            }
-        });
-
         applyLang();
+        fetchUserInfo();  // 获取用户信息
         setInterval(poll, 1500);
         setInterval(fetchHistory, 5000);  // Fetch history less frequently
-        setInterval(fetchFeishuConfig, 10000);  // Check Feishu status periodically
         poll();
         fetchHistory();
-        fetchFeishuConfig();
     </script>
     <style>
         .animate-fade-in {

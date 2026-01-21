@@ -61,24 +61,22 @@ async def test_ask_user_flow():
     sim_thread = threading.Thread(target=user_reply_simulator)
     sim_thread.start()
     
-    # Call the blocking function directly
+    # Call the async function via the .fn attribute
     print("[Agent] Asking question (blocking)...")
     from core import collect_user_intent
-    # collect_user_intent is decorated with @mcp.tool, making it a FunctionTool object
-    # Its underlying function is .fn, which is a regular sync function (not async)
-    # FastMCP handles the execution. We need to access .fn to call the original function.
-    loop = asyncio.get_event_loop()
-    if hasattr(collect_user_intent, "fn"):
-        # The tool function itself is sync but performs blocking polling
-        answer = await loop.run_in_executor(None, collect_user_intent.fn, "Do you like Python?")
-    else:
-        # Fallback: if for some reason .fn doesn't exist, try calling directly
-        answer = await loop.run_in_executor(None, collect_user_intent, "Do you like Python?")
-    print(f"[Agent] Key returned: {answer}")
+    # collect_user_intent is a FunctionTool, its .fn is the original async function
+    answer = await collect_user_intent.fn("Do you like Python?")
+    print(f"[Agent] Answer returned: {answer}")
     
     sim_thread.join()
     
-    assert "I totally agree!" in answer
+    # answer can be a string or a list of content objects
+    if isinstance(answer, list):
+        answer_text = answer[0].text if hasattr(answer[0], 'text') else str(answer[0])
+    else:
+        answer_text = str(answer)
+    
+    assert "I totally agree!" in answer_text
     print("--- Test PASSED ---")
 
 
@@ -117,21 +115,23 @@ async def test_markdown_question_flow():
     sim_thread = threading.Thread(target=user_reply_simulator_markdown)
     sim_thread.start()
     
-    # Call the blocking function with Markdown content
+    # Call the async function via the .fn attribute with Markdown content
     print("[Agent] Asking Markdown question (blocking)...")
     from core import collect_user_intent
     
-    loop = asyncio.get_event_loop()
-    if hasattr(collect_user_intent, "fn"):
-        answer = await loop.run_in_executor(None, collect_user_intent.fn, MARKDOWN_QUESTION)
-    else:
-        # Fallback: if for some reason .fn doesn't exist, try calling directly
-        answer = await loop.run_in_executor(None, collect_user_intent, MARKDOWN_QUESTION)
+    # collect_user_intent is a FunctionTool, its .fn is the original async function
+    answer = await collect_user_intent.fn(MARKDOWN_QUESTION)
     print(f"[Agent] Answer returned: {answer}")
     
     sim_thread.join()
     
-    assert "Markdown looks good!" in answer
+    # answer can be a string or a list of content objects
+    if isinstance(answer, list):
+        answer_text = answer[0].text if hasattr(answer[0], 'text') else str(answer[0])
+    else:
+        answer_text = str(answer)
+    
+    assert "Markdown looks good!" in answer_text
     print("--- Markdown Test PASSED ---")
 
 

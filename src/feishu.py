@@ -97,6 +97,7 @@ class FeishuService:
         """Load configuration from persistent storage (database)."""
         try:
             with sqlite3.connect(DB_PATH) as conn:
+                # First try to load from feishu_config table
                 cursor = conn.execute(
                     "SELECT key, value FROM feishu_config"
                 )
@@ -111,18 +112,30 @@ class FeishuService:
                     self.config.receive_id_type = config_dict.get("receive_id_type", "open_id")
                     self.config.enabled = config_dict.get("enabled", "false").lower() == "true"
 
-                    logger.info(f"Loaded Feishu config from database: enabled={self.config.enabled}")
+                    logger.info(f"Loaded Feishu config from feishu_config table: enabled={self.config.enabled}")
+                else:
+                    # Fallback: try to load from admin_config table (used for OAuth)
+                    cursor = conn.execute(
+                        "SELECT key, value FROM admin_config WHERE key IN ('feishu_app_id', 'feishu_app_secret')"
+                    )
+                    admin_config = {row[0]: row[1] for row in cursor.fetchall()}
+                    
+                    if admin_config.get('feishu_app_id') and admin_config.get('feishu_app_secret'):
+                        self.config.app_id = admin_config.get('feishu_app_id', '')
+                        self.config.app_secret = admin_config.get('feishu_app_secret', '')
+                        # Note: receive_id will be set per-user when sending messages
+                        self.config.enabled = True  # Auto-enable if credentials are available
+                        logger.info(f"Loaded Feishu config from admin_config table: app_id={self.config.app_id[:8]}...")
 
-                    # Initialize client if configured
-                    if self.config.enabled and self.config.app_id and self.config.app_secret:
-                        self._init_client()
-                        # Start WebSocket listener
-                        if not self._running:
-                            self._start_ws_listener()
+                # Initialize client if configured
+                if self.config.app_id and self.config.app_secret:
+                    self._init_client()
+                    # Note: WebSocket listener should be started separately
+                    # to avoid event loop conflicts in async environments
 
-        except sqlite3.OperationalError:
+        except sqlite3.OperationalError as e:
             # Table doesn't exist yet, will be created by init_db()
-            logger.debug("feishu_config table not found, using default config")
+            logger.debug(f"Config table not found, using default config: {e}")
         except Exception as e:
             logger.error(f"Error loading Feishu config: {e}")
 
@@ -225,7 +238,11 @@ class FeishuService:
         logger.info("Feishu API client initialized")
     
     def _handle_message_receive(self, data) -> None:
-        """Handle incoming message events from Feishu."""
+        """Handle incoming message events from Feishu.
+        
+        In multi-tenant mode, messages are routed based on sender's open_id.
+        The reply is stored in the database and delivered to the corresponding user.
+        """
         try:
             event = data.event
             message = event.message
@@ -248,7 +265,36 @@ class FeishuService:
             else:
                 reply_text = f"[{msg_type} message]"
             
-            # Find pending message and deliver reply
+            # In multi-tenant mode: find pending message for this specific sender
+            # and update the database directly
+            if sender_id:
+                try:
+                    with sqlite3.connect(DB_PATH) as conn:
+                        # Find pending request for this user
+                        cursor = conn.execute(
+                            """SELECT id FROM intent_queue 
+                               WHERE user_id = ? AND status = 'PENDING' 
+                               ORDER BY created_at ASC LIMIT 1""",
+                            (sender_id,)
+                        )
+                        row = cursor.fetchone()
+                        
+                        if row:
+                            request_id = row[0]
+                            # Update the response in database
+                            conn.execute(
+                                """UPDATE intent_queue 
+                                   SET response = ?, status = 'RESPONDED', responded_at = ?
+                                   WHERE id = ?""",
+                                (reply_text, int(time.time()), request_id)
+                            )
+                            logger.info(f"Feishu reply stored for user {sender_id[:20]}..., request {request_id}")
+                        else:
+                            logger.warning(f"No pending request found for Feishu user {sender_id[:20]}...")
+                except Exception as db_error:
+                    logger.error(f"Database error handling Feishu reply: {db_error}")
+            
+            # Also deliver to in-memory queues for backward compatibility
             with self._lock:
                 # For simplicity, deliver to the oldest pending message
                 # In production, you might want to track conversation context
@@ -271,13 +317,20 @@ class FeishuService:
             return
 
         import asyncio
-
+        import nest_asyncio
+        
         def run_ws():
             # Create a new event loop for this thread
             loop = None
             try:
                 loop = asyncio.new_event_loop()
                 asyncio.set_event_loop(loop)
+                
+                # Apply nest_asyncio to allow nested event loops
+                try:
+                    nest_asyncio.apply(loop)
+                except Exception:
+                    pass  # nest_asyncio might not be installed
 
                 # Create event handler
                 event_handler = lark.EventDispatcherHandler.builder("", "") \
@@ -304,7 +357,10 @@ class FeishuService:
                 self._running = False
                 logger.info("Feishu WebSocket listener stopped")
                 if loop:
-                    loop.close()
+                    try:
+                        loop.close()
+                    except Exception:
+                        pass
 
         self._ws_thread = threading.Thread(target=run_ws, daemon=True)
         self._ws_thread.start()

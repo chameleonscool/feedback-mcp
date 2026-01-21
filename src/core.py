@@ -349,12 +349,17 @@ async def collect_user_intent(question: str) -> str | list:
     timeout = DEFAULT_TIMEOUT
     request_id = str(uuid.uuid4())
     
-    # Check if Feishu mode is enabled and configured
-    fs = get_feishu_service()
-    if fs.is_configured():
-        return await _collect_via_feishu(fs, request_id, question, timeout)
+    # 获取用户信息（用于消息隔离和飞书通知）
+    user_info = _get_user_info_from_api_key()
     
-    # Default: Web UI mode
+    # 检查是否应该发送飞书通知
+    if user_info and user_info.get('feishu_notify_enabled'):
+        fs = get_feishu_service()
+        # 使用用户的 open_id 作为 receive_id 发送飞书消息
+        if _send_feishu_to_user(fs, user_info['open_id'], request_id, question):
+            logger.info(f"Feishu notification sent to user {user_info['open_id'][:10]}...")
+    
+    # 始终使用 Web UI 模式等待回复（飞书只是通知）
     return await _collect_via_web(request_id, question, timeout)
 
 
@@ -382,15 +387,121 @@ async def _collect_via_feishu(fs, request_id: str, question: str, timeout: int) 
     return "Timeout: No response received from Feishu."
 
 
+def _get_user_info_from_api_key() -> dict | None:
+    """
+    从环境变量获取 API Key 并查询对应的用户信息
+    
+    返回:
+    - 用户信息字典，包含 open_id, name, feishu_notify_enabled 等
+    - 如果未配置或用户不存在，返回 None
+    """
+    api_key = os.getenv("USERINTENT_API_KEY")
+    if not api_key:
+        return None
+    
+    try:
+        from users import UserManager
+        user_manager = UserManager(DB_PATH)
+        user = user_manager.get_user_by_api_key(api_key)
+        if user:
+            # 检查用户是否启用了飞书通知
+            feishu_notify_enabled = False
+            try:
+                with sqlite3.connect(DB_PATH) as conn:
+                    cursor = conn.execute(
+                        "SELECT value FROM user_settings WHERE user_id = ? AND key = 'feishu_notify_enabled'",
+                        (user["open_id"],)
+                    )
+                    row = cursor.fetchone()
+                    feishu_notify_enabled = row[0] == "1" if row else False
+            except Exception:
+                pass  # 表可能不存在
+            
+            logger.info(f"API Key authenticated for user: {user.get('name', 'Unknown')} ({user['open_id'][:10]}...), feishu_notify={feishu_notify_enabled}")
+            return {
+                "open_id": user["open_id"],
+                "name": user.get("name"),
+                "feishu_notify_enabled": feishu_notify_enabled
+            }
+    except Exception as e:
+        logger.warning(f"Failed to get user info from API Key: {e}")
+    
+    return None
+
+
+def _get_user_id_from_api_key() -> str | None:
+    """
+    从环境变量获取 API Key 并查询对应的用户 ID（兼容旧接口）
+    """
+    user_info = _get_user_info_from_api_key()
+    return user_info["open_id"] if user_info else None
+
+
+def _send_feishu_to_user(fs, open_id: str, request_id: str, question: str) -> bool:
+    """
+    向指定用户发送飞书消息
+    
+    Args:
+        fs: FeishuService 实例
+        open_id: 用户的飞书 open_id
+        request_id: 请求 ID
+        question: 问题内容
+    
+    Returns:
+        是否发送成功
+    """
+    try:
+        # 检查飞书服务是否可用（只需要 app_id 和 app_secret）
+        if not fs.is_available():
+            logger.debug("Feishu SDK not available")
+            return False
+        
+        # 获取系统配置的 app_id 和 app_secret（从 admin_config 表）
+        with sqlite3.connect(DB_PATH) as conn:
+            cursor = conn.execute("SELECT key, value FROM admin_config WHERE key IN ('feishu_app_id', 'feishu_app_secret')")
+            config = {row[0]: row[1] for row in cursor.fetchall()}
+        
+        app_id = config.get('feishu_app_id')
+        app_secret = config.get('feishu_app_secret')
+        
+        if not app_id or not app_secret:
+            logger.debug("Feishu app credentials not configured in admin_config")
+            return False
+        
+        # 临时配置飞书服务以发送消息
+        fs.config.app_id = app_id
+        fs.config.app_secret = app_secret
+        fs.config.receive_id = open_id
+        fs.config.receive_id_type = "open_id"
+        fs.config.enabled = True
+        fs._init_client()
+        
+        # 发送消息
+        result = fs.send_message(request_id, question)
+        logger.info(f"Feishu message sent to user {open_id[:15]}... for request {request_id}")
+        return result
+    except Exception as e:
+        logger.warning(f"Failed to send Feishu message to user: {e}")
+        return False
+
+
+def _get_user_id_from_user_info(user_info: dict | None) -> str | None:
+    """从用户信息中提取 user_id"""
+    return user_info["open_id"] if user_info else None
+
+
 async def _collect_via_web(request_id: str, question: str, timeout: int) -> str | list:
     """Collect user intent via Web UI (async implementation for SSE mode)."""
     import asyncio
     
-    # Store question in database
+    # 获取用户 ID（用于消息隔离）
+    user_id = _get_user_id_from_api_key()
+    
+    # Store question in database（包含 user_id）
     with sqlite3.connect(DB_PATH) as conn:
         conn.execute(
-            "INSERT INTO intent_queue (id, question, status) VALUES (?, ?, 'PENDING')",
-            (request_id, question)
+            "INSERT INTO intent_queue (id, question, status, user_id) VALUES (?, ?, 'PENDING', ?)",
+            (request_id, question, user_id)
         )
     
     logger.info(f"Question stored: {question[:50]}... (ID: {request_id})")
