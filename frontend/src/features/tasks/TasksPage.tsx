@@ -438,7 +438,7 @@ export default function TasksPage() {
           <div className="absolute -bottom-40 -left-40 w-80 h-80 bg-gradient-to-br from-blue-200/30 to-cyan-200/30 rounded-full blur-3xl"></div>
         </div>
 
-        <div className="flex-1 overflow-y-auto p-8 relative z-0 flex items-start justify-center">
+        <div className="flex-1 overflow-y-auto p-6 lg:p-8 relative z-0">
           {selectedHistoryTask ? (
             <HistoryDetail item={selectedHistoryTask} t={t} />
           ) : selectedTask ? (

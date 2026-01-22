@@ -30,7 +30,7 @@ export function TaskDetail({
   t,
 }: TaskDetailProps) {
   return (
-    <div className="w-full max-w-2xl animate-fade-in">
+    <div className="w-full min-w-[32rem] animate-fade-in">
       <div className="glass rounded-2xl shadow-xl overflow-hidden">
         {/* Question */}
         <div className="bg-gray-50/50 border-b border-gray-100 p-6">
