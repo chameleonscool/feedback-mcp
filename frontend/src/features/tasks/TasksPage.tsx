@@ -12,94 +12,9 @@ import {
 import { fetchUserInfo, fetchFeishuNotifyStatus, updateFeishuNotify } from '@/features/user/userSlice';
 import { clearAuth } from '@/features/auth/authSlice';
 import { useNavigate } from 'react-router-dom';
-import ReactMarkdown from 'react-markdown';
-import remarkGfm from 'remark-gfm';
 
-// i18n 翻译
-const translations = {
-  en: {
-    title: "AI Intent",
-    status_connected: "Service Connected",
-    status_disconnected: "Disconnected (Retrying...)",
-    no_tasks: "No pending tasks",
-    wait_ai: "Waiting for AI to ask questions...",
-    notify_granted: "On",
-    notify_denied: "Off",
-    notify_default: "Request",
-    sw_active: "SW: Active",
-    sw_loading: "SW: Loading",
-    placeholder: "Enter your reply... (Ctrl+Enter to send)",
-    markdown_tip: "Supports Markdown | ⌘+Enter",
-    upload_img: "Click to upload screenshot",
-    paste_tip: "Or paste image directly",
-    dismiss: "Dismiss",
-    send: "Send Reply",
-    alert_empty: "Please enter content or upload an image",
-    alert_fail: "Send failed",
-    status_pending: "Pending",
-    history: "History",
-    history_hide: "Hide",
-    history_show: "Show",
-    completed: "Completed",
-    delete_selected: "Delete",
-    select_all: "All",
-    deselect_all: "None",
-    back_login: "Back to Login",
-    logged_in: "Logged in",
-    pending_tasks: "Pending Tasks",
-    ticket: "Ticket",
-    just_now: "just now",
-    feishu_on: "Feishu ON",
-    feishu_off: "Feishu OFF",
-    browser_notify: "Browser Notification",
-    all_done: "All tasks completed",
-    select_task_tip: "Select a task from the list to reply",
-    your_reply: "Your Reply:",
-    no_reply: "(No reply)",
-  },
-  zh: {
-    title: "AI 意图采集中心",
-    status_connected: "服务连接正常",
-    status_disconnected: "连接断开 (重试中...)",
-    no_tasks: "暂无待处理任务",
-    wait_ai: "请等待 AI 发起新的提问...",
-    notify_granted: "已开启",
-    notify_denied: "已禁用",
-    notify_default: "点击请求",
-    sw_active: "SW: 已激活",
-    sw_loading: "SW: 未加载",
-    placeholder: "请输入您的回复... (Ctrl+Enter 发送)",
-    markdown_tip: "支持 Markdown | ⌘+Enter",
-    upload_img: "点击上传截图",
-    paste_tip: "或直接粘贴图片到页面",
-    dismiss: "忽略 (Dismiss)",
-    send: "发送回复",
-    alert_empty: "请输入内容或上传图片",
-    alert_fail: "发送失败",
-    status_pending: "处理中",
-    history: "历史记录",
-    history_hide: "隐藏",
-    history_show: "显示",
-    completed: "已完成",
-    delete_selected: "删除",
-    select_all: "全选",
-    deselect_all: "取消",
-    back_login: "返回登录",
-    logged_in: "已登录",
-    pending_tasks: "待处理任务",
-    ticket: "任务",
-    just_now: "刚刚",
-    feishu_on: "飞书通知 ON",
-    feishu_off: "飞书通知 OFF",
-    browser_notify: "浏览器通知",
-    all_done: "已完成所有任务",
-    select_task_tip: "请从左侧列表选择一个任务进行回复",
-    your_reply: "您的回复：",
-    no_reply: "（无回复）",
-  },
-};
-
-type Lang = 'en' | 'zh';
+import { translations, type Lang, type TranslationKey } from './i18n';
+import { TaskDetail, HistoryDetail, EmptyState } from './components';
 
 export default function TasksPage() {
   const dispatch = useAppDispatch();
@@ -126,25 +41,21 @@ export default function TasksPage() {
   const selectedHistoryTask = history.find((t) => t.id === selectedHistoryId);
 
   // 翻译函数
-  const t = (key: keyof typeof translations.en) => translations[lang][key];
+  const t = (key: TranslationKey): string => translations[lang][key];
 
   useEffect(() => {
-    // 加载用户信息
     dispatch(fetchUserInfo());
     dispatch(fetchFeishuNotifyStatus());
 
-    // 检查通知权限
     if ('Notification' in window) {
       setNotifyPermission(Notification.permission);
     }
 
-    // 开始轮询待处理任务
     dispatch(fetchPendingTasks());
     pollingRef.current = window.setInterval(() => {
       dispatch(fetchPendingTasks());
     }, 1500);
 
-    // 轮询历史记录（较低频率）
     dispatch(fetchHistory());
     historyPollingRef.current = window.setInterval(() => {
       dispatch(fetchHistory());
@@ -174,14 +85,12 @@ export default function TasksPage() {
     return () => document.removeEventListener('paste', handlePaste);
   }, []);
 
-  // 语言切换
   const toggleLang = () => {
     const newLang = lang === 'en' ? 'zh' : 'en';
     setLang(newLang);
     localStorage.setItem('lang', newLang);
   };
 
-  // 请求浏览器通知权限
   const requestNotificationPermission = async () => {
     if ('Notification' in window) {
       const permission = await Notification.requestPermission();
@@ -252,7 +161,6 @@ export default function TasksPage() {
     navigate('/login');
   };
 
-  // 历史记录多选
   const toggleHistorySelection = (id: string, e: React.MouseEvent) => {
     e.stopPropagation();
     const newSet = new Set(selectedHistoryIds);
@@ -282,7 +190,6 @@ export default function TasksPage() {
     }
   };
 
-  // 格式化时间
   const formatRelativeTime = (dateStr: string) => {
     const date = new Date(dateStr);
     const now = new Date();
@@ -297,7 +204,6 @@ export default function TasksPage() {
     return `${days}d`;
   };
 
-  // 获取通知状态文本
   const getNotifyStatusText = () => {
     if (notifyPermission === 'granted') return t('notify_granted');
     if (notifyPermission === 'denied') return t('notify_denied');
@@ -310,7 +216,6 @@ export default function TasksPage() {
       <aside className="w-80 bg-gradient-to-b from-slate-900 via-slate-800 to-slate-900 flex flex-col shadow-2xl z-10">
         {/* 顶部用户信息区域 */}
         <div className="p-5 border-b border-slate-700/50 shrink-0">
-          {/* 用户信息卡片 */}
           <div className="flex items-center gap-3 p-3 bg-slate-800/50 rounded-2xl border border-slate-700/30 backdrop-blur">
             <div className="w-12 h-12 rounded-xl bg-gradient-to-br from-violet-500 to-purple-600 flex items-center justify-center overflow-hidden shadow-lg shadow-violet-500/30 ring-2 ring-slate-700">
               {profile?.avatarUrl ? (
@@ -328,7 +233,6 @@ export default function TasksPage() {
                 <span className="text-xs text-emerald-400">{t('logged_in')}</span>
               </div>
             </div>
-            {/* 语言切换按钮 */}
             <button
               onClick={toggleLang}
               className="p-2 text-xs font-medium text-slate-400 hover:text-white hover:bg-slate-700 rounded-lg transition-all"
@@ -337,7 +241,6 @@ export default function TasksPage() {
             </button>
           </div>
           
-          {/* 状态指示器和飞书开关 */}
           <div className="mt-4 flex items-center justify-between">
             <div className="flex items-center gap-2">
               <span className="relative flex h-2.5 w-2.5">
@@ -349,7 +252,6 @@ export default function TasksPage() {
               </span>
             </div>
             
-            {/* 飞书通知开关 */}
             <button
               onClick={() => dispatch(updateFeishuNotify(!feishuNotifyEnabled))}
               className={`
@@ -364,7 +266,6 @@ export default function TasksPage() {
             </button>
           </div>
           
-          {/* 标题 */}
           <div className="mt-4 flex items-center gap-2">
             <div className="w-8 h-8 rounded-lg bg-gradient-to-br from-blue-500 to-cyan-500 flex items-center justify-center shadow-lg shadow-blue-500/30">
               <svg className="w-5 h-5 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -375,9 +276,8 @@ export default function TasksPage() {
           </div>
         </div>
 
-        {/* 任务列表区域 - 可滚动 */}
+        {/* 任务列表区域 */}
         <div className="flex-1 overflow-y-auto p-4 space-y-3">
-          {/* 待处理任务标题 */}
           <div className="flex items-center gap-2 px-1 mb-2">
             <div className="w-1.5 h-1.5 rounded-full bg-amber-400 animate-pulse"></div>
             <span className="text-xs font-semibold text-slate-400 uppercase tracking-wider">
@@ -385,7 +285,6 @@ export default function TasksPage() {
             </span>
           </div>
           
-          {/* 待处理任务列表 */}
           <div className="space-y-2">
             {pending.length === 0 ? (
               <div className="text-center py-8 px-4">
@@ -504,7 +403,6 @@ export default function TasksPage() {
         {/* 底部工具栏 */}
         <div className="p-4 border-t border-slate-700/50 bg-slate-900/50 shrink-0">
           <div className="flex items-center justify-between">
-            {/* 浏览器通知开关 */}
             <button 
               onClick={requestNotificationPermission}
               className="text-xs text-slate-500 hover:text-slate-300 transition-colors flex items-center gap-1.5"
@@ -521,7 +419,6 @@ export default function TasksPage() {
             </div>
           </div>
           
-          {/* 返回登录按钮 */}
           <button
             onClick={handleLogout}
             className="mt-3 w-full flex items-center justify-center gap-2 px-4 py-2.5 text-sm text-slate-400 hover:text-white hover:bg-slate-700/50 rounded-xl transition-all"
@@ -536,7 +433,6 @@ export default function TasksPage() {
 
       {/* Main Content */}
       <main className="flex-1 flex flex-col relative bg-gradient-to-br from-slate-50 via-white to-blue-50/30">
-        {/* 装饰性背景 */}
         <div className="absolute inset-0 overflow-hidden pointer-events-none">
           <div className="absolute -top-40 -right-40 w-80 h-80 bg-gradient-to-br from-violet-200/30 to-purple-200/30 rounded-full blur-3xl"></div>
           <div className="absolute -bottom-40 -left-40 w-80 h-80 bg-gradient-to-br from-blue-200/30 to-cyan-200/30 rounded-full blur-3xl"></div>
@@ -564,7 +460,6 @@ export default function TasksPage() {
           )}
         </div>
 
-        {/* 隐藏的文件输入 */}
         <input
           type="file"
           ref={fileInputRef}
@@ -573,193 +468,6 @@ export default function TasksPage() {
           className="hidden"
         />
       </main>
-    </div>
-  );
-}
-
-interface TaskDetailProps {
-  task: { id: string; question: string; image?: string };
-  replyText: string;
-  setReplyText: (text: string) => void;
-  replyImage: string | null;
-  onImageSelect: () => void;
-  onClearImage: () => void;
-  onSubmit: () => void;
-  onDismiss: () => void;
-  onKeyDown: (e: React.KeyboardEvent) => void;
-  submitting: boolean;
-  t: (key: keyof typeof translations.en) => string;
-}
-
-function TaskDetail({
-  task,
-  replyText,
-  setReplyText,
-  replyImage,
-  onImageSelect,
-  onClearImage,
-  onSubmit,
-  onDismiss,
-  onKeyDown,
-  submitting,
-  t,
-}: TaskDetailProps) {
-  return (
-    <div className="w-full max-w-2xl animate-fade-in">
-      <div className="glass rounded-2xl shadow-xl overflow-hidden">
-        {/* Question */}
-        <div className="bg-gray-50/50 border-b border-gray-100 p-6">
-          <div className="flex items-center space-x-2 mb-3">
-            <span className="px-2 py-0.5 rounded text-[10px] font-bold bg-blue-100 text-blue-600 uppercase tracking-wide">
-              {t('status_pending')}
-            </span>
-            <span className="text-xs text-gray-400 font-mono">ID: {task.id.substring(0, 8)}</span>
-          </div>
-          <div className="markdown-content text-gray-800 prose prose-sm max-w-none">
-            <ReactMarkdown remarkPlugins={[remarkGfm]}>{task.question}</ReactMarkdown>
-          </div>
-
-          {task.image && (
-            <div className="mt-4">
-              <img src={task.image} alt="附图" className="max-w-full rounded-lg border border-gray-200 shadow-sm" />
-            </div>
-          )}
-        </div>
-
-        {/* Reply Form */}
-        <div className="p-6 space-y-6 bg-white/60">
-          <div className="relative">
-            <textarea
-              value={replyText}
-              onChange={(e) => setReplyText(e.target.value)}
-              onKeyDown={onKeyDown}
-              placeholder={t('placeholder')}
-              className="w-full h-40 p-4 bg-white border border-gray-200 rounded-xl focus:ring-2 focus:ring-blue-500 focus:border-transparent outline-none transition-all resize-none text-gray-700 placeholder-gray-400 text-base leading-relaxed shadow-sm hover:border-gray-300"
-              autoFocus
-            />
-            <div className="absolute bottom-3 right-3 text-xs text-gray-400 pointer-events-none bg-white/80 px-2 py-1 rounded">
-              {t('markdown_tip')}
-            </div>
-          </div>
-
-          {/* Image Upload */}
-          <div className="relative group">
-            <div 
-              onClick={onImageSelect}
-              className="border-2 border-dashed border-gray-200 rounded-xl p-6 text-center transition-all duration-200 hover:bg-blue-50/30 hover:border-blue-300 cursor-pointer"
-            >
-              {replyImage ? (
-                <div className="relative inline-block">
-                  <img src={replyImage} alt="预览" className="max-h-64 rounded-lg shadow-md border border-gray-200" />
-                  <button 
-                    onClick={(e) => { e.stopPropagation(); onClearImage(); }}
-                    className="absolute -top-3 -right-3 bg-white text-red-500 rounded-full p-1.5 shadow-md hover:bg-red-50 border border-gray-100 transition-all transform hover:scale-110"
-                  >
-                    <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
-                    </svg>
-                  </button>
-                </div>
-              ) : (
-                <>
-                  <svg className="w-10 h-10 mx-auto text-gray-300 group-hover:text-blue-500 transition-colors mb-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z" />
-                  </svg>
-                  <p className="text-sm text-gray-500 font-medium group-hover:text-blue-600 transition-colors">{t('upload_img')}</p>
-                  <p className="text-xs text-gray-400 mt-1">{t('paste_tip')}</p>
-                </>
-              )}
-            </div>
-          </div>
-
-          {/* Action Buttons */}
-          <div className="flex items-center space-x-4 pt-4 border-t border-gray-100">
-            <button 
-              onClick={onDismiss}
-              className="px-6 py-3 text-gray-500 hover:text-red-600 hover:bg-red-50 font-medium rounded-xl transition-all duration-200 text-sm"
-            >
-              {t('dismiss')}
-            </button>
-            <button 
-              onClick={onSubmit}
-              disabled={submitting}
-              className="flex-1 px-8 py-3 bg-gradient-to-r from-blue-600 to-indigo-600 hover:from-blue-700 hover:to-indigo-700 text-white font-bold rounded-xl shadow-lg shadow-blue-500/30 transition-all duration-200 transform hover:-translate-y-0.5 focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 flex justify-center items-center gap-2 text-sm disabled:opacity-50 disabled:cursor-not-allowed disabled:transform-none"
-            >
-              {submitting ? (
-                <span className="animate-spin">⏳</span>
-              ) : (
-                <>
-                  <span>{t('send')}</span>
-                  <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M14 5l7 7m0 0l-7 7m7-7H3" />
-                  </svg>
-                </>
-              )}
-            </button>
-          </div>
-        </div>
-      </div>
-    </div>
-  );
-}
-
-interface HistoryDetailProps {
-  item: { id: string; question: string; answer?: string; completedAt?: string };
-  t: (key: keyof typeof translations.en) => string;
-}
-
-function HistoryDetail({ item, t }: HistoryDetailProps) {
-  return (
-    <div className="w-full max-w-2xl animate-fade-in">
-      <div className="glass rounded-2xl shadow-xl overflow-hidden">
-        {/* Question */}
-        <div className="bg-green-50/50 border-b border-green-100 p-6">
-          <div className="flex items-center space-x-2 mb-3">
-            <span className="px-2 py-0.5 rounded text-[10px] font-bold bg-green-100 text-green-600 uppercase tracking-wide">
-              ✓ {t('completed')}
-            </span>
-            <span className="text-xs text-gray-400 font-mono">ID: {item.id.substring(0, 8)}</span>
-            {item.completedAt && (
-              <span className="text-xs text-gray-400 ml-auto">
-                {new Date(item.completedAt).toLocaleString()}
-              </span>
-            )}
-          </div>
-          <div className="markdown-content text-gray-800 prose prose-sm max-w-none">
-            <ReactMarkdown remarkPlugins={[remarkGfm]}>{item.question}</ReactMarkdown>
-          </div>
-        </div>
-
-        {/* Answer */}
-        <div className="p-6 bg-white/60">
-          <h3 className="text-sm font-semibold text-gray-500 mb-2">{t('your_reply')}</h3>
-          {item.answer ? (
-            <div className="bg-gray-50 rounded-lg p-4 text-gray-700 prose prose-sm max-w-none">
-              <ReactMarkdown remarkPlugins={[remarkGfm]}>{item.answer}</ReactMarkdown>
-            </div>
-          ) : (
-            <p className="text-gray-400 italic">{t('no_reply')}</p>
-          )}
-        </div>
-      </div>
-    </div>
-  );
-}
-
-interface EmptyStateProps {
-  t: (key: keyof typeof translations.en) => string;
-}
-
-function EmptyState({ t }: EmptyStateProps) {
-  return (
-    <div className="text-center text-gray-400 animate-fade-in">
-      <div className="w-24 h-24 mx-auto mb-6 bg-gray-50 rounded-full flex items-center justify-center">
-        <svg className="w-10 h-10 opacity-30" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M20 13V6a2 2 0 00-2-2H6a2 2 0 00-2 2v7m16 0v5a2 2 0 01-2 2H6a2 2 0 01-2-2v-5m16 0h-2.586a1 1 0 00-.707.293l-2.414 2.414a1 1 0 01-.707.293h-3.172a1 1 0 01-.707-.293l-2.414-2.414A1 1 0 006.586 13H4" />
-        </svg>
-      </div>
-      <p className="text-xl font-medium text-gray-500">{t('all_done')}</p>
-      <p className="text-sm mt-2 opacity-60">{t('select_task_tip')}</p>
     </div>
   );
 }
