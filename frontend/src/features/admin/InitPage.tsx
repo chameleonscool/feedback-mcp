@@ -33,7 +33,7 @@ export default function InitPage() {
 
   const checkStatus = async () => {
     try {
-      const response = await api.get<SystemStatus>('/api/status');
+      const response = await api.get<SystemStatus>('/api/system/status');
       const status = response.data;
 
       if (status.initialized) {
@@ -69,7 +69,7 @@ export default function InitPage() {
 
     setLoading(true);
     try {
-      await api.post('/api/init/admin', {
+      await api.post('/api/system/initialize', {
         username: adminUsername,
         password: adminPassword,
       });
@@ -87,7 +87,7 @@ export default function InitPage() {
     setLoading(true);
 
     try {
-      await api.post('/api/init/feishu', {
+      await api.post('/api/admin/feishu/config', {
         app_id: appId,
         app_secret: appSecret,
         redirect_uri: redirectUri,

@@ -38,10 +38,10 @@ function App() {
 
   const checkSystemStatus = async () => {
     try {
-      const response = await api.get<SystemStatus>('/api/status');
+      const response = await api.get<SystemStatus>('/api/system/status');
       setSystemStatus(response.data);
     } catch {
-      // 如果 /api/status 不可用，假设系统已初始化
+      // 如果 /api/system/status 不可用，假设系统已初始化
       setSystemStatus({
         initialized: true,
         admin_exists: true,

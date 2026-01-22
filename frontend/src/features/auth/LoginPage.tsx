@@ -165,7 +165,7 @@ export default function LoginPage() {
 
           <Button
             variant="secondary"
-            onClick={() => setViewState('admin-login')}
+            onClick={() => navigate('/admin/login')}
             className="w-full"
           >
             🔐 管理员登录
