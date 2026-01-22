@@ -6,6 +6,7 @@ const initialState: TasksState = {
   pending: [],
   history: [],
   selectedTaskId: null,
+  selectedHistoryId: null,
   pollingStatus: 'idle',
 };
 
@@ -92,6 +93,13 @@ export const tasksSlice = createSlice({
     },
 
     /**
+     * 选择历史记录
+     */
+    selectHistoryItem: (state, action: PayloadAction<string | null>) => {
+      state.selectedHistoryId = action.payload;
+    },
+
+    /**
      * 设置轮询状态
      */
     setPollingStatus: (state, action: PayloadAction<TasksState['pollingStatus']>) => {
@@ -156,6 +164,7 @@ export const {
   addTask,
   removeTask,
   selectTask,
+  selectHistoryItem,
   setPollingStatus,
   clearHistory,
 } = tasksSlice.actions;

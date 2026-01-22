@@ -14,6 +14,7 @@ describe('tasksSlice', () => {
     pending: [],
     history: [],
     selectedTaskId: null,
+    selectedHistoryId: null,
     pollingStatus: 'idle',
   };
 

@@ -36,6 +36,7 @@ export interface TasksState {
   pending: Task[];
   history: Task[];
   selectedTaskId: string | null;
+  selectedHistoryId: string | null;
   pollingStatus: 'idle' | 'polling' | 'paused' | 'error';
 }
 
