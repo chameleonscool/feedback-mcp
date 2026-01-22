@@ -98,12 +98,12 @@ class FeishuWSListener:
                 
                 if row:
                     request_id = row[0]
-                    # 更新数据库中的响应
+                    # 更新数据库中的响应（使用 answer 字段和 COMPLETED 状态，与 web_multi_tenant.py 保持一致）
                     conn.execute(
                         """UPDATE intent_queue 
-                           SET response = ?, status = 'RESPONDED', responded_at = ?
+                           SET answer = ?, status = 'COMPLETED', completed_at = CURRENT_TIMESTAMP
                            WHERE id = ?""",
-                        (reply_text, int(time.time()), request_id)
+                        (reply_text, request_id)
                     )
                     logger.info(f"Reply stored for user {sender_id[:20]}..., request {request_id}")
                     return True

@@ -281,12 +281,12 @@ class FeishuService:
                         
                         if row:
                             request_id = row[0]
-                            # Update the response in database
+                            # Update the response in database (使用 answer 字段和 COMPLETED 状态，与 web_multi_tenant.py 保持一致)
                             conn.execute(
                                 """UPDATE intent_queue 
-                                   SET response = ?, status = 'RESPONDED', responded_at = ?
+                                   SET answer = ?, status = 'COMPLETED', completed_at = CURRENT_TIMESTAMP
                                    WHERE id = ?""",
-                                (reply_text, int(time.time()), request_id)
+                                (reply_text, request_id)
                             )
                             logger.info(f"Feishu reply stored for user {sender_id[:20]}..., request {request_id}")
                         else:
