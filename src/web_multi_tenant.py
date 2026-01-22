@@ -892,37 +892,18 @@ async def user_page(api_key: Optional[str] = None):
     """)
 
 
-@app.get("/webui", response_class=HTMLResponse)
-async def webui_page():
-    """单用户模式 - 原始 Web UI（无需登录）"""
-    # 加载原始的 index.html 模板
-    original_template = os.path.join(TEMPLATES_DIR, "index.html")
-    if os.path.exists(original_template):
-        with open(original_template, "r", encoding="utf-8") as f:
-            return HTMLResponse(content=f.read())
+@app.get("/webui")
+async def webui_page(api_key: Optional[str] = None):
+    """
+    Web UI - 重定向到 React 前端
     
-    # 如果没有原始模板，返回简单的 Web UI
-    return HTMLResponse(content="""
-<!DOCTYPE html>
-<html>
-<head>
-    <title>AI Intent Center - Web UI</title>
-    <meta charset="UTF-8">
-    <style>
-        body { font-family: system-ui; max-width: 800px; margin: 50px auto; padding: 20px; }
-        h1 { color: #333; }
-        .info { background: #f0f0f0; padding: 20px; border-radius: 8px; }
-    </style>
-</head>
-<body>
-    <h1>🤖 AI Intent Center - 单用户模式</h1>
-    <div class="info">
-        <p>单用户模式已启用。此模式下无需登录即可使用。</p>
-        <p>请配置 MCP 客户端连接到此服务。</p>
-    </div>
-</body>
-</html>
-    """)
+    如果提供了 api_key 参数，会将其保存到 localStorage 中
+    """
+    # 重定向到 React 前端
+    # React 前端会从 URL 参数中获取 api_key 并保存到 localStorage
+    if api_key:
+        return RedirectResponse(url=f"/app?api_key={api_key}")
+    return RedirectResponse(url="/app")
 
 
 # ============================================================================

@@ -1007,7 +1007,7 @@
         function continueWithCachedLogin() {
             const apiKey = getCachedApiKey();
             if (apiKey) {
-                window.location.href = `/webui?api_key=${encodeURIComponent(apiKey)}`;
+                window.location.href = `/app?api_key=${encodeURIComponent(apiKey)}`;
             }
         }
         
@@ -1217,7 +1217,7 @@
         }
         
         function gotoWebUI() {
-            window.location.href = '/webui';
+            window.location.href = '/app';
         }
         
         // Logout cached user
@@ -1255,8 +1255,8 @@
         // First check if we have an API Key in URL (from OAuth callback)
         const urlApiKey = handleApiKeyFromUrl();
         if (urlApiKey) {
-            // Redirect to WebUI with API Key
-            window.location.href = `/webui?api_key=${encodeURIComponent(urlApiKey)}`;
+            // Redirect to React frontend with API Key
+            window.location.href = `/app?api_key=${encodeURIComponent(urlApiKey)}`;
         } else {
             checkSystemStatus();
         }

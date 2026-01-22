@@ -1,7 +1,7 @@
 import { useEffect, useState } from 'react';
-import { Routes, Route, Navigate, useLocation } from 'react-router-dom';
+import { Routes, Route, Navigate, useLocation, useSearchParams } from 'react-router-dom';
 import { useAppDispatch, useAppSelector } from '@/hooks/useAppDispatch';
-import { loadCachedAuth } from '@/features/auth/authSlice';
+import { loadCachedAuth, setApiKey } from '@/features/auth/authSlice';
 import { loadCachedSession } from '@/features/admin/adminSlice';
 import { api } from '@/services/api';
 
@@ -21,6 +21,7 @@ interface SystemStatus {
 function App() {
   const dispatch = useAppDispatch();
   const location = useLocation();
+  const [searchParams, setSearchParams] = useSearchParams();
   const { isAuthenticated: userAuth } = useAppSelector((state) => state.auth);
   const { isAuthenticated: adminAuth } = useAppSelector((state) => state.admin);
 
@@ -28,13 +29,24 @@ function App() {
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
-    // 加载缓存的认证状态
-    dispatch(loadCachedAuth());
+    // 检查 URL 中是否有 api_key 参数（从 OAuth 回调重定向来的）
+    const apiKeyFromUrl = searchParams.get('api_key');
+    if (apiKeyFromUrl) {
+      // 保存 API Key 到 Redux store 和 localStorage
+      dispatch(setApiKey(apiKeyFromUrl));
+      // 清除 URL 中的 api_key 参数
+      searchParams.delete('api_key');
+      setSearchParams(searchParams, { replace: true });
+    } else {
+      // 加载缓存的认证状态
+      dispatch(loadCachedAuth());
+    }
+    
     dispatch(loadCachedSession());
 
     // 检查系统状态
     checkSystemStatus();
-  }, [dispatch]);
+  }, [dispatch, searchParams, setSearchParams]);
 
   const checkSystemStatus = async () => {
     try {

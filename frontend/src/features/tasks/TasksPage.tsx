@@ -7,7 +7,7 @@ import {
   submitReply,
   dismissTask,
 } from './tasksSlice';
-import { fetchUserInfo, fetchFeishuNotifyStatus } from '@/features/user/userSlice';
+import { fetchUserInfo, fetchFeishuNotifyStatus, updateFeishuNotify } from '@/features/user/userSlice';
 import { clearAuth } from '@/features/auth/authSlice';
 import { Button, Card } from '@/components/ui';
 import { useNavigate } from 'react-router-dom';
@@ -109,9 +109,18 @@ export default function TasksPage() {
             </div>
             <div className="flex-1 min-w-0">
               <h2 className="font-semibold truncate">{profile?.name || '用户'}</h2>
-              <p className="text-xs text-slate-400">
-                {feishuNotifyEnabled ? '🔔 飞书通知已开启' : '🔕 飞书通知已关闭'}
-              </p>
+              <button
+                onClick={() => dispatch(updateFeishuNotify(!feishuNotifyEnabled))}
+                className={`
+                  text-xs px-2 py-1 rounded-lg mt-1 transition-all
+                  ${feishuNotifyEnabled 
+                    ? 'bg-green-500/20 text-green-400 border border-green-500/30' 
+                    : 'bg-slate-700/50 text-slate-400 border border-slate-600/30 hover:bg-slate-700'
+                  }
+                `}
+              >
+                {feishuNotifyEnabled ? '🔔 飞书通知 ON' : '🔕 飞书通知 OFF'}
+              </button>
             </div>
           </div>
         </div>
