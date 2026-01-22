@@ -11,6 +11,9 @@ from fastapi.middleware.cors import CORSMiddleware
 from fastapi.staticfiles import StaticFiles
 from pydantic import BaseModel
 
+# 导入 MCP 服务
+from core import mcp
+
 # 数据库路径
 BASE_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 SRC_DIR = os.path.dirname(os.path.abspath(__file__))
@@ -1306,6 +1309,14 @@ if os.path.exists(FRONTEND_DIST_DIR):
         if os.path.exists(index_path):
             return FileResponse(index_path)
         raise HTTPException(status_code=404, detail="Frontend not built")
+
+
+# ============================================================================
+# MCP SSE 端点
+# ============================================================================
+
+# 挂载 MCP SSE 端点
+app.mount("/mcp", mcp.http_app(transport='sse'))
 
 
 if __name__ == "__main__":
