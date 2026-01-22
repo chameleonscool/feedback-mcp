@@ -1273,12 +1273,27 @@ async def health_check():
 FRONTEND_DIST_DIR = os.path.join(os.path.dirname(SRC_DIR), "frontend", "dist")
 
 if os.path.exists(FRONTEND_DIST_DIR):
-    # 挂载前端静态资源
-    app.mount("/assets", StaticFiles(directory=os.path.join(FRONTEND_DIST_DIR, "assets")), name="frontend_assets")
+    # 挂载前端静态资源（/app/assets 路径）
+    assets_dir = os.path.join(FRONTEND_DIST_DIR, "assets")
+    if os.path.exists(assets_dir):
+        app.mount("/app/assets", StaticFiles(directory=assets_dir), name="frontend_assets")
+    
+    # 前端静态文件（如 vite.svg）
+    @app.get("/app/vite.svg")
+    async def serve_vite_svg():
+        svg_path = os.path.join(FRONTEND_DIST_DIR, "vite.svg")
+        if os.path.exists(svg_path):
+            return FileResponse(svg_path)
+        raise HTTPException(status_code=404)
     
     @app.get("/app/{full_path:path}")
     async def serve_frontend_spa(full_path: str):
         """服务 React 前端 SPA（/app 路径下）"""
+        # 首先检查是否有静态文件
+        file_path = os.path.join(FRONTEND_DIST_DIR, full_path)
+        if os.path.exists(file_path) and os.path.isfile(file_path):
+            return FileResponse(file_path)
+        # 否则返回 index.html（SPA 路由）
         index_path = os.path.join(FRONTEND_DIST_DIR, "index.html")
         if os.path.exists(index_path):
             return FileResponse(index_path)
