@@ -6,20 +6,21 @@
 
 | 版本 | 阶段 | 状态 | 说明 |
 |------|------|------|------|
-| v1.0 | 多租户模式 | ✅ 已完成 | 飞书登录、消息隔离、Web UI |
-| v2.0 | React 前端 | 🚧 开发中 | React + Redux 前后端分离 |
+| v0.1.0 | 多租户模式 | ✅ 已完成 | 飞书登录、消息隔离、Web UI |
+| v0.9.0 | React 前端 | 🚧 开发中 | React + Redux 前后端分离 |
+| v1.0.0 | 正式发布 | 📋 计划中 | 功能完善、生产就绪 |
 
 ---
 
-## v1.0 - 多租户模式
+## v0.1.0 - 多租户模式
 
-**目录**: `v1.0-multi-tenant/`
+**目录**: `v0.1.0-multi-tenant/`
 
 | 文档 | 说明 |
 |------|------|
-| [PRD-feishu-multi-tenant.md](v1.0-multi-tenant/PRD-feishu-multi-tenant.md) | 产品需求文档 |
-| [DESIGN-feishu-multi-tenant.md](v1.0-multi-tenant/DESIGN-feishu-multi-tenant.md) | 技术设计文档 |
-| [diagrams/](v1.0-multi-tenant/diagrams/) | 架构图、流程图 |
+| [PRD-feishu-multi-tenant.md](v0.1.0-multi-tenant/PRD-feishu-multi-tenant.md) | 产品需求文档 |
+| [DESIGN-feishu-multi-tenant.md](v0.1.0-multi-tenant/DESIGN-feishu-multi-tenant.md) | 技术设计文档 |
+| [diagrams/](v0.1.0-multi-tenant/diagrams/) | 架构图、流程图 |
 
 ### 主要功能
 
@@ -39,15 +40,15 @@
 
 ---
 
-## v2.0 - React 前端
+## v0.9.0 - React 前端
 
-**目录**: `v2.0-react-frontend/`
+**目录**: `v0.9.0-react-frontend/`
 
 | 文档 | 说明 |
 |------|------|
-| [REFACTOR-react-redux.md](v2.0-react-frontend/REFACTOR-react-redux.md) | 重构方案设计 |
-| [DEV-PLAN.md](v2.0-react-frontend/DEV-PLAN.md) | 开发计划 |
-| [TEST-PLAN.md](v2.0-react-frontend/TEST-PLAN.md) | TDD 测试计划 |
+| [REFACTOR-react-redux.md](v0.9.0-react-frontend/REFACTOR-react-redux.md) | 重构方案设计 |
+| [DEV-PLAN.md](v0.9.0-react-frontend/DEV-PLAN.md) | 开发计划 |
+| [TEST-PLAN.md](v0.9.0-react-frontend/TEST-PLAN.md) | TDD 测试计划 |
 
 ### 主要变更
 
@@ -85,6 +86,6 @@
 
 | 版本 | 功能 | 状态 |
 |------|------|------|
-| v2.1 | 深色/浅色主题切换 | 📋 计划中 |
-| v2.2 | PWA 离线支持 | 📋 计划中 |
-| v3.0 | 多语言国际化 | 📋 计划中 |
+| v0.9.1 | 深色/浅色主题切换 | 📋 计划中 |
+| v0.9.2 | PWA 离线支持 | 📋 计划中 |
+| v1.0.0 | 正式发布 | 📋 计划中 |
