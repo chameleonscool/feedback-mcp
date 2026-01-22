@@ -20,3 +20,4 @@ build/
 *.log
 *.lock
 .venv/
+test_feishu.py
