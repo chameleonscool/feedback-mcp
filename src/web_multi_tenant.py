@@ -1265,6 +1265,34 @@ async def health_check():
     return {"status": "ok", "timestamp": int(time.time())}
 
 
+# ============================================================================
+# React 前端静态文件服务（生产模式）
+# ============================================================================
+
+# 前端构建目录
+FRONTEND_DIST_DIR = os.path.join(os.path.dirname(SRC_DIR), "frontend", "dist")
+
+if os.path.exists(FRONTEND_DIST_DIR):
+    # 挂载前端静态资源
+    app.mount("/assets", StaticFiles(directory=os.path.join(FRONTEND_DIST_DIR, "assets")), name="frontend_assets")
+    
+    @app.get("/app/{full_path:path}")
+    async def serve_frontend_spa(full_path: str):
+        """服务 React 前端 SPA（/app 路径下）"""
+        index_path = os.path.join(FRONTEND_DIST_DIR, "index.html")
+        if os.path.exists(index_path):
+            return FileResponse(index_path)
+        raise HTTPException(status_code=404, detail="Frontend not built")
+    
+    @app.get("/app")
+    async def serve_frontend_root():
+        """React 前端入口"""
+        index_path = os.path.join(FRONTEND_DIST_DIR, "index.html")
+        if os.path.exists(index_path):
+            return FileResponse(index_path)
+        raise HTTPException(status_code=404, detail="Frontend not built")
+
+
 if __name__ == "__main__":
     import uvicorn
     uvicorn.run(app, host="0.0.0.0", port=8000)

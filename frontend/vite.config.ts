@@ -6,6 +6,8 @@ import path from 'path'
 // https://vite.dev/config/
 export default defineConfig({
   plugins: [react(), tailwindcss()],
+  // 生产模式下使用 /app 作为基础路径
+  base: process.env.NODE_ENV === 'production' ? '/app/' : '/',
   resolve: {
     alias: {
       '@': path.resolve(__dirname, './src'),
