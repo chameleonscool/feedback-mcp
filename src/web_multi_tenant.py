@@ -370,6 +370,28 @@ async def enable_user(
     return {"success": True}
 
 
+@app.get("/api/admin/feishu/config")
+async def get_feishu_config(
+    _: bool = Depends(verify_admin_session)
+):
+    """获取飞书配置（管理员）"""
+    with sqlite3.connect(DB_PATH) as conn:
+        cursor = conn.execute(
+            "SELECT key, value FROM admin_config WHERE key LIKE 'feishu_%'"
+        )
+        config = {}
+        for key, value in cursor.fetchall():
+            # 移除 feishu_ 前缀
+            config_key = key.replace("feishu_", "")
+            # 不返回 app_secret 的完整值，只返回是否已配置
+            if config_key == "app_secret":
+                config["app_secret_configured"] = bool(value)
+            else:
+                config[config_key] = value
+        
+        return config
+
+
 @app.post("/api/admin/feishu/config")
 async def update_feishu_config(
     request: FeishuConfigRequest,

@@ -223,7 +223,9 @@ function FeishuPanel() {
   const [appId, setAppId] = useState('');
   const [appSecret, setAppSecret] = useState('');
   const [redirectUri, setRedirectUri] = useState('');
+  const [secretConfigured, setSecretConfigured] = useState(false);
   const [loading, setLoading] = useState(false);
+  const [configLoading, setConfigLoading] = useState(true);
   const [message, setMessage] = useState<{ type: 'success' | 'error'; text: string } | null>(
     null
   );
@@ -233,15 +235,20 @@ function FeishuPanel() {
   }, []);
 
   const loadConfig = async () => {
+    setConfigLoading(true);
     try {
       const response = await adminApi.get<{
-        app_id: string;
-        redirect_uri: string;
+        app_id?: string;
+        redirect_uri?: string;
+        app_secret_configured?: boolean;
       }>('/api/admin/feishu/config');
       setAppId(response.data.app_id || '');
       setRedirectUri(response.data.redirect_uri || '');
+      setSecretConfigured(response.data.app_secret_configured || false);
     } catch {
-      // Ignore
+      // Ignore - config might not exist yet
+    } finally {
+      setConfigLoading(false);
     }
   };
 
@@ -265,11 +272,45 @@ function FeishuPanel() {
     }
   };
 
+  if (configLoading) {
+    return (
+      <div>
+        <h2 className="text-2xl font-bold mb-6">🔗 飞书配置</h2>
+        <Card className="max-w-lg text-center py-8">
+          <div className="w-8 h-8 border-4 border-blue-500 border-t-transparent rounded-full animate-spin mx-auto mb-4" />
+          <p className="text-slate-400">加载配置中...</p>
+        </Card>
+      </div>
+    );
+  }
+
   return (
     <div>
       <h2 className="text-2xl font-bold mb-6">🔗 飞书配置</h2>
 
       <Card className="max-w-lg">
+        {/* 配置状态提示 */}
+        {appId && (
+          <div className="mb-4 p-3 rounded-lg bg-green-500/10 border border-green-500/20">
+            <p className="text-sm text-green-400">
+              ✅ 飞书应用已配置 (App ID: {appId.substring(0, 10)}...)
+            </p>
+            {secretConfigured && (
+              <p className="text-xs text-green-400/70 mt-1">
+                App Secret 已设置
+              </p>
+            )}
+          </div>
+        )}
+        
+        {!appId && (
+          <div className="mb-4 p-3 rounded-lg bg-yellow-500/10 border border-yellow-500/20">
+            <p className="text-sm text-yellow-400">
+              ⚠️ 飞书应用尚未配置
+            </p>
+          </div>
+        )}
+
         <form onSubmit={handleSubmit} className="space-y-4">
           <Input
             label="App ID"
@@ -279,11 +320,11 @@ function FeishuPanel() {
           />
 
           <Input
-            label="App Secret (留空则不修改)"
+            label={secretConfigured ? "App Secret (已配置，留空则不修改)" : "App Secret"}
             type="password"
             value={appSecret}
             onChange={(e) => setAppSecret(e.target.value)}
-            placeholder="••••••••"
+            placeholder={secretConfigured ? "••••••••（已配置）" : "请输入 App Secret"}
           />
 
           <Input
