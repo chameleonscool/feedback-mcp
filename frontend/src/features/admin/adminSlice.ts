@@ -53,16 +53,34 @@ export const verifyAdminSession = createAsyncThunk(
   }
 );
 
+// API 返回的用户数据格式
+interface ApiUser {
+  open_id: string;
+  name: string;
+  email?: string;
+  is_active: number;
+  created_at: number;
+}
+
 /**
  * 获取用户列表
  */
 export const fetchAdminUsers = createAsyncThunk(
   'admin/fetchUsers',
   async () => {
-    const response = await adminApi.get<{ users: AdminUser[] }>(
+    const response = await adminApi.get<{ users: ApiUser[] }>(
       '/api/admin/users'
     );
-    return response.data.users;
+    // 转换 API 数据格式为前端类型
+    return response.data.users.map((user): AdminUser => ({
+      openId: user.open_id,
+      name: user.name,
+      email: user.email,
+      isActive: user.is_active === 1,
+      createdAt: user.created_at
+        ? new Date(user.created_at * 1000).toISOString()
+        : '',
+    }));
   }
 );
 
