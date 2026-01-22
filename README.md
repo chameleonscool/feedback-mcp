@@ -1,81 +1,40 @@
 # User Intent MCP
 
-A Model Context Protocol (MCP) server with multimodal user intent collection support, allowing AI agents to ask users questions and receive text and image responses.
+一个支持多模态用户意图采集的 MCP 服务器，让 AI Agent 能够向用户提问并获取回复。
 
-## ✨ Features
+## ✨ 功能特性
 
-- **Multi-task Parallelism**: Supports multiple agents initiating requests simultaneously.
-- **Task Management**: Users can manually dismiss/ignore requests.
-- **Multimodal Input**: Supports uploading or pasting screenshots.
-- **Dual Transport Modes**: Supports both SSE (HTTP) and STDIO modes.
-- **System Notifications**: Automatic browser notifications for new questions.
-- **Persistence**: Uses SQLite to ensure task state reliability.
-- **i18n Support**: Bilingual UI (English/Chinese) with configurable preferences.
-- **Feishu Integration**: Support Feishu OAuth login and message notifications.
-- **Multi-tenant Support**: Multiple users can use the system with isolated message queues.
+- 🔐 **飞书登录** - 通过飞书 OAuth 登录，30 天免登录
+- 📨 **消息隔离** - 每个用户只能看到自己的消息
+- 🖼️ **图文输入** - 支持文字和截图回复
+- 🔔 **飞书通知** - 新消息时推送飞书通知
+- 📡 **双传输模式** - 支持 SSE 和 STDIO 两种模式
 
-## 📁 Project Structure
+## 🚀 快速开始
 
-```
-user-intent-mcp/
-├── src/                      # Source code
-│   ├── core.py               # Core logic (Database, MCP tools)
-│   ├── web.py                # FastAPI routes (single-user mode)
-│   ├── web_multi_tenant.py   # FastAPI routes (multi-tenant mode)
-│   ├── server.py             # Unified entry point
-│   ├── auth.py               # Admin authentication
-│   ├── oauth.py              # Feishu OAuth
-│   ├── users.py              # User management
-│   ├── feishu.py             # Feishu service (send messages)
-│   ├── feishu_ws_listener.py # Feishu WebSocket listener (receive messages)
-│   ├── static/               # Static assets (Service Worker)
-│   └── templates/            # HTML templates
-│       ├── index.html        # Web UI
-│       └── multi_tenant.html # Multi-tenant login page
-├── data/                     # Runtime data
-│   └── intent.db             # SQLite database
-├── docs/                     # Documentation
-│   ├── PRD-feishu-multi-tenant.md
-│   └── DESIGN-feishu-multi-tenant.md
-└── tests/                    # Test cases
-```
-
-## 🚀 Quick Start
-
-### Installation
+### 安装
 
 ```bash
-cd user-intent-mcp
 pip install -e .
-# Or using uv
-uv pip install -e .
-
-# Install Feishu SDK for message notifications
-pip install lark_oapi
+pip install lark_oapi  # 飞书通知功能
 ```
 
-### Running
+### 启动服务
 
-**Multi-tenant Mode (Recommended)**:
 ```bash
-cd src && PYTHONPATH=. python -m uvicorn web_multi_tenant:app --host 0.0.0.0 --port 8000
+cd src && PYTHONPATH=. uvicorn web_multi_tenant:app --host 0.0.0.0 --port 8000
 ```
 
-**Single-user Mode (SSE with Web UI)**:
-```bash
-cd src && python server.py --mode sse
-```
+### 获取 API Key
 
-**STDIO Mode (for MCP clients)**:
-```bash
-cd src && python server.py --mode stdio
-```
+1. 访问 `http://localhost:8000`
+2. 点击「使用飞书登录」
+3. 授权后在用户中心复制 API Key
 
-Visit `http://localhost:8000` to view the Web interface.
+## 🔑 MCP 客户端配置
 
-### MCP Client Configuration
+### STDIO 模式
 
-**Multi-tenant Mode with API Key**:
 ```json
 {
   "mcpServers": {
@@ -83,60 +42,37 @@ Visit `http://localhost:8000` to view the Web interface.
       "command": "uv",
       "args": ["run", "python", "/path/to/server.py", "--mode", "stdio"],
       "env": {
-        "USERINTENT_API_KEY": "uk_your_api_key_here"
+        "USERINTENT_API_KEY": "uk_your_api_key"
       }
     }
   }
 }
 ```
 
-**SSE Mode** (`mcp_config.json`):
+### SSE 模式
+
 ```json
 {
   "mcpServers": {
     "user-intent": {
-      "url": "http://localhost:8000/mcp/sse"
+      "transport": "sse",
+      "url": "http://localhost:8000/mcp/sse",
+      "headers": {
+        "Authorization": "Bearer uk_your_api_key"
+      }
     }
   }
 }
 ```
 
-## ⚙️ Configuration Options
+## ⚙️ 环境变量
 
-### Environment Variables
-
-| Variable | Description | Default |
+| 变量 | 说明 | 默认值 |
 | :--- | :--- | :--- |
-| `USERINTENT_DB_PATH` | Path to SQLite database file | `data/intent.db` |
-| `USERINTENT_WEB_PORT` | Web server port | `8000` |
-| `USERINTENT_WEB_HOST` | Web server listen address | `0.0.0.0` |
-| `USERINTENT_API_KEY` | User API Key (for multi-tenant mode) | - |
-| `USERINTENT_ENABLE_SYSTEM_NOTIFY` | Enable native system notifications | `false` |
-| `USERINTENT_LOG_PATH` | Path to log file | `.log/intent.log` |
-| `USERINTENT_TIMEOUT` | Default timeout for user responses (seconds) | `3000` |
-| `USERINTENT_HISTORY_DAYS` | Number of days to keep completed intent history | `3` |
-
-## 🔐 Multi-tenant Mode
-
-### Initial Setup
-
-1. Start the server in multi-tenant mode
-2. Visit `http://localhost:8000`
-3. Set up admin username and password
-4. Configure Feishu App ID and App Secret (optional)
-
-### User Login
-
-1. Click "Login with Feishu" button
-2. Authorize with Feishu account
-3. Get your API Key from user center
-4. Configure API Key in MCP client
-
-### Message Isolation
-
-- Messages are isolated by user
-- Feishu users only see their own messages
-- Anonymous WebUI users only see public messages
+| `USERINTENT_API_KEY` | 用户 API Key | - |
+| `USERINTENT_DB_PATH` | 数据库路径 | `data/intent.db` |
+| `USERINTENT_WEB_PORT` | Web 端口 | `8000` |
+| `USERINTENT_TIMEOUT` | 超时时间（秒） | `3000` |
 
 ## 🚀 Production Deployment
 

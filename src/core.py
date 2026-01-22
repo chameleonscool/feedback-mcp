@@ -387,15 +387,45 @@ async def _collect_via_feishu(fs, request_id: str, question: str, timeout: int) 
     return "Timeout: No response received from Feishu."
 
 
+def _get_api_key() -> str | None:
+    """
+    获取 API Key，优先从 HTTP Header 获取，其次从环境变量获取
+    
+    支持的方式：
+    1. HTTP Authorization Header: "Bearer uk_xxx"
+    2. 环境变量: USERINTENT_API_KEY
+    
+    返回:
+    - API Key 字符串
+    - 如果未找到，返回 None
+    """
+    # 尝试从 HTTP Header 获取（SSE 模式）
+    try:
+        from fastmcp.server.dependencies import get_http_headers
+        headers = get_http_headers()
+        if headers:
+            # 支持 Authorization: Bearer uk_xxx
+            auth_header = headers.get("authorization", "")
+            if auth_header.startswith("Bearer "):
+                api_key = auth_header[7:].strip()
+                if api_key:
+                    return api_key
+    except Exception:
+        pass  # get_http_headers 可能在非 HTTP 上下文中失败
+    
+    # 从环境变量获取（STDIO 模式）
+    return os.getenv("USERINTENT_API_KEY")
+
+
 def _get_user_info_from_api_key() -> dict | None:
     """
-    从环境变量获取 API Key 并查询对应的用户信息
+    获取 API Key 并查询对应的用户信息
     
     返回:
     - 用户信息字典，包含 open_id, name, feishu_notify_enabled 等
     - 如果未配置或用户不存在，返回 None
     """
-    api_key = os.getenv("USERINTENT_API_KEY")
+    api_key = _get_api_key()
     if not api_key:
         return None
     

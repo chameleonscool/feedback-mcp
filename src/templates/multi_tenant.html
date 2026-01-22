@@ -599,6 +599,38 @@
         </div>
     </div>
 
+    <!-- View: Cached Login (已登录用户快速入口) -->
+    <div id="view-cached-login" class="view">
+        <div class="main">
+            <div class="card">
+                <h1 class="card-title">👋 欢迎回来</h1>
+                <p class="card-subtitle">您的登录状态仍然有效</p>
+                
+                <div style="text-align: center; margin: 24px 0;">
+                    <div class="user-avatar" id="cached-user-avatar" style="margin: 0 auto;">👤</div>
+                    <div class="user-name" id="cached-user-name" style="margin-top: 16px;">用户</div>
+                    <div style="color: var(--text-muted); font-size: 13px; margin-top: 8px;">
+                        登录有效期还剩 <span id="cached-remaining-days">30</span> 天
+                    </div>
+                </div>
+                
+                <input type="hidden" id="cached-api-key" value="">
+                
+                <button class="btn btn-primary" onclick="continueWithCachedLogin()">
+                    ✨ 继续使用
+                </button>
+                
+                <button class="btn btn-secondary" style="margin-top: 12px;" onclick="switchAccount()">
+                    🔄 切换账号
+                </button>
+                
+                <button class="btn btn-secondary" style="margin-top: 12px;" onclick="logoutCachedUser()">
+                    🚪 退出登录
+                </button>
+            </div>
+        </div>
+    </div>
+
     <!-- View: Login -->
     <div id="view-login" class="view">
         <div class="main">
@@ -811,6 +843,48 @@
         let sessionToken = null;
         let currentUser = null;
         
+        // Constants
+        const API_KEY_STORAGE_KEY = 'userApiKey';
+        const API_KEY_EXPIRY_KEY = 'userApiKeyExpiry';
+        const API_KEY_CACHE_DAYS = 30;
+        
+        // API Key Cache Functions
+        function saveApiKeyToCache(apiKey) {
+            const expiryDate = new Date();
+            expiryDate.setDate(expiryDate.getDate() + API_KEY_CACHE_DAYS);
+            localStorage.setItem(API_KEY_STORAGE_KEY, apiKey);
+            localStorage.setItem(API_KEY_EXPIRY_KEY, expiryDate.getTime().toString());
+        }
+        
+        function getCachedApiKey() {
+            const apiKey = localStorage.getItem(API_KEY_STORAGE_KEY);
+            const expiry = localStorage.getItem(API_KEY_EXPIRY_KEY);
+            
+            if (!apiKey || !expiry) {
+                return null;
+            }
+            
+            // Check if expired
+            if (Date.now() > parseInt(expiry)) {
+                clearApiKeyCache();
+                return null;
+            }
+            
+            return apiKey;
+        }
+        
+        function clearApiKeyCache() {
+            localStorage.removeItem(API_KEY_STORAGE_KEY);
+            localStorage.removeItem(API_KEY_EXPIRY_KEY);
+        }
+        
+        function getRemainingCacheDays() {
+            const expiry = localStorage.getItem(API_KEY_EXPIRY_KEY);
+            if (!expiry) return 0;
+            const remaining = parseInt(expiry) - Date.now();
+            return Math.ceil(remaining / (1000 * 60 * 60 * 24));
+        }
+        
         // API Helper
         async function api(method, endpoint, data = null, auth = false) {
             const options = {
@@ -867,7 +941,31 @@
                 if (!status.initialized) {
                     showView('view-init');
                 } else {
-                    // Check if we have a session
+                    // Check if we have a cached API Key (Feishu user)
+                    const cachedApiKey = getCachedApiKey();
+                    if (cachedApiKey) {
+                        try {
+                            // Verify API Key is still valid (using Authorization header)
+                            const response = await fetch('/api/user/info', {
+                                headers: { 'Authorization': `Bearer ${cachedApiKey}` }
+                            });
+                            if (response.ok) {
+                                const userInfo = await response.json();
+                                if (userInfo && userInfo.name) {
+                                    // Valid cached login, redirect to WebUI
+                                    showCachedLoginView(userInfo, cachedApiKey);
+                                    return;
+                                }
+                            } else {
+                                clearApiKeyCache();
+                            }
+                        } catch (e) {
+                            // Invalid API Key, clear cache
+                            clearApiKeyCache();
+                        }
+                    }
+                    
+                    // Check if we have an admin session
                     const savedToken = localStorage.getItem('adminSession');
                     if (savedToken) {
                         sessionToken = savedToken;
@@ -888,6 +986,35 @@
                 console.error('Failed to check status:', e);
                 showView('view-login');
             }
+        }
+        
+        // Show cached login view
+        function showCachedLoginView(userInfo, apiKey) {
+            // Update user info display
+            document.getElementById('cached-user-name').textContent = userInfo.name || '用户';
+            document.getElementById('cached-user-avatar').textContent = userInfo.avatar_url ? '' : '👤';
+            if (userInfo.avatar_url) {
+                document.getElementById('cached-user-avatar').style.backgroundImage = `url(${userInfo.avatar_url})`;
+                document.getElementById('cached-user-avatar').style.backgroundSize = 'cover';
+            }
+            document.getElementById('cached-remaining-days').textContent = getRemainingCacheDays();
+            document.getElementById('cached-api-key').value = apiKey;
+            
+            showView('view-cached-login');
+        }
+        
+        // Continue with cached login
+        function continueWithCachedLogin() {
+            const apiKey = getCachedApiKey();
+            if (apiKey) {
+                window.location.href = `/webui?api_key=${encodeURIComponent(apiKey)}`;
+            }
+        }
+        
+        // Switch account (logout cached user)
+        function switchAccount() {
+            clearApiKeyCache();
+            showView('view-login');
         }
         
         // Initialize Steps
@@ -1093,6 +1220,12 @@
             window.location.href = '/webui';
         }
         
+        // Logout cached user
+        function logoutCachedUser() {
+            clearApiKeyCache();
+            showView('view-login');
+        }
+        
         // User functions
         function copyApiKey() {
             const apiKey = document.getElementById('user-api-key').textContent;
@@ -1100,8 +1233,33 @@
             showAlert('alert-admin', '已复制到剪贴板', 'success');
         }
         
+        // Handle API Key from URL (after Feishu OAuth callback)
+        function handleApiKeyFromUrl() {
+            const urlParams = new URLSearchParams(window.location.search);
+            const apiKey = urlParams.get('api_key');
+            
+            if (apiKey && apiKey.startsWith('uk_')) {
+                // Save to cache
+                saveApiKeyToCache(apiKey);
+                
+                // Clean URL
+                const cleanUrl = window.location.pathname;
+                window.history.replaceState({}, document.title, cleanUrl);
+                
+                return apiKey;
+            }
+            return null;
+        }
+        
         // Start
-        checkSystemStatus();
+        // First check if we have an API Key in URL (from OAuth callback)
+        const urlApiKey = handleApiKeyFromUrl();
+        if (urlApiKey) {
+            // Redirect to WebUI with API Key
+            window.location.href = `/webui?api_key=${encodeURIComponent(urlApiKey)}`;
+        } else {
+            checkSystemStatus();
+        }
     </script>
 </body>
 </html>

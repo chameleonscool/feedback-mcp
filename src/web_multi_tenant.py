@@ -810,11 +810,33 @@ async def user_page(api_key: Optional[str] = None):
         
         <div class="actions" style="margin-top: 24px;">
             <a href="/webui?api_key={api_key}" class="btn btn-primary">💻 进入 Web UI</a>
+            <button onclick="logout()" class="btn btn-secondary">🚪 退出登录</button>
             <a href="/" class="btn btn-secondary">🏠 返回首页</a>
+        </div>
+        
+        <div class="note" style="margin-top: 16px; background: #fef3c7; border-color: #fcd34d; color: #92400e;">
+            🔒 <strong>登录缓存：</strong>您的登录状态将保存 30 天，下次访问可直接使用。
         </div>
     </div>
     
     <script>
+        // API Key Cache Functions (30 days)
+        const API_KEY_STORAGE_KEY = 'userApiKey';
+        const API_KEY_EXPIRY_KEY = 'userApiKeyExpiry';
+        const API_KEY_CACHE_DAYS = 30;
+        
+        function saveApiKeyToCache(apiKey) {{
+            const expiryDate = new Date();
+            expiryDate.setDate(expiryDate.getDate() + API_KEY_CACHE_DAYS);
+            localStorage.setItem(API_KEY_STORAGE_KEY, apiKey);
+            localStorage.setItem(API_KEY_EXPIRY_KEY, expiryDate.getTime().toString());
+        }}
+        
+        function clearApiKeyCache() {{
+            localStorage.removeItem(API_KEY_STORAGE_KEY);
+            localStorage.removeItem(API_KEY_EXPIRY_KEY);
+        }}
+        
         function copyApiKey() {{
             const apiKey = document.getElementById('apiKey').textContent;
             navigator.clipboard.writeText(apiKey).then(() => {{
@@ -826,6 +848,19 @@ async def user_page(api_key: Optional[str] = None):
                 }}, 2000);
             }});
         }}
+        
+        function logout() {{
+            clearApiKeyCache();
+            window.location.href = '/';
+        }}
+        
+        // Save API Key to cache on page load
+        (function() {{
+            const apiKey = document.getElementById('apiKey').textContent;
+            if (apiKey && apiKey.startsWith('uk_')) {{
+                saveApiKeyToCache(apiKey);
+            }}
+        }})();
     </script>
 </body>
 </html>
@@ -915,17 +950,33 @@ def init_intent_db():
         ''')
 
 
+def _get_api_key_from_header(authorization: Optional[str]) -> Optional[str]:
+    """
+    从 Authorization Header 获取 API Key
+    
+    格式: Authorization: Bearer uk_xxx
+    """
+    if not authorization:
+        return None
+    if authorization.startswith("Bearer "):
+        return authorization[7:].strip()
+    return None
+
+
 @app.get("/api/poll")
-async def poll_question(api_key: Optional[str] = Query(None)):
+async def poll_question(authorization: Optional[str] = Header(None)):
     """
     返回待处理的问题
     
+    认证: Authorization: Bearer uk_xxx
+    
     消息隔离规则：
-    - 如果提供 api_key：只返回该用户的消息（user_id = 用户的 open_id）
-    - 如果不提供 api_key：只返回公共消息（user_id IS NULL）
-    - 如果 api_key 无效：返回空列表
+    - 如果提供有效 API Key：只返回该用户的消息
+    - 如果不提供 API Key：只返回公共消息（user_id IS NULL）
+    - 如果 API Key 无效：返回空列表
     """
     init_intent_db()
+    api_key = _get_api_key_from_header(authorization)
     
     with sqlite3.connect(DB_PATH) as conn:
         if api_key:
@@ -966,15 +1017,17 @@ async def receive_reply(reply: ReplyModel):
 
 
 @app.get("/api/user/info")
-async def get_user_info_by_api_key(api_key: Optional[str] = Query(None)):
+async def get_user_info_by_api_key(authorization: Optional[str] = Header(None)):
     """
-    根据 API Key 获取用户信息
-    用于 WebUI 显示当前登录用户
+    获取当前用户信息
+    
+    认证: Authorization: Bearer uk_xxx
     """
+    api_key = _get_api_key_from_header(authorization)
     if not api_key:
         return JSONResponse(
-            status_code=400,
-            content={"error": "Missing api_key parameter"}
+            status_code=401,
+            content={"error": "Missing Authorization header"}
         )
     
     user_manager = get_user_manager()
@@ -1001,12 +1054,15 @@ class FeishuNotifyRequest(BaseModel):
 
 
 @app.get("/api/user/feishu-notify")
-async def get_feishu_notify_status(api_key: Optional[str] = Query(None)):
+async def get_feishu_notify_status(authorization: Optional[str] = Header(None)):
     """
     获取用户的飞书通知状态
+    
+    认证: Authorization: Bearer uk_xxx
     """
+    api_key = _get_api_key_from_header(authorization)
     if not api_key:
-        return JSONResponse(status_code=400, content={"error": "Missing api_key"})
+        return JSONResponse(status_code=401, content={"error": "Missing Authorization header"})
     
     user_manager = get_user_manager()
     user = user_manager.get_user_by_api_key(api_key)
@@ -1029,13 +1085,16 @@ async def get_feishu_notify_status(api_key: Optional[str] = Query(None)):
 @app.post("/api/user/feishu-notify")
 async def set_feishu_notify_status(
     request: FeishuNotifyRequest,
-    api_key: Optional[str] = Query(None)
+    authorization: Optional[str] = Header(None)
 ):
     """
     设置用户的飞书通知状态
+    
+    认证: Authorization: Bearer uk_xxx
     """
+    api_key = _get_api_key_from_header(authorization)
     if not api_key:
-        return JSONResponse(status_code=400, content={"error": "Missing api_key"})
+        return JSONResponse(status_code=401, content={"error": "Missing Authorization header"})
     
     user_manager = get_user_manager()
     user = user_manager.get_user_by_api_key(api_key)

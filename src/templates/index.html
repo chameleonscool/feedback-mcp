@@ -379,6 +379,15 @@
         let currentUser = null;
         let feishuNotifyEnabled = false;  // 飞书通知开关状态
         
+        // API 请求辅助函数 - 使用 Authorization Header
+        async function apiRequest(url, options = {}) {
+            const headers = options.headers || {};
+            if (apiKey) {
+                headers['Authorization'] = `Bearer ${apiKey}`;
+            }
+            return fetch(url, { ...options, headers });
+        }
+        
         // 获取用户信息
         async function fetchUserInfo() {
             const userNameEl = document.getElementById('user-name');
@@ -403,7 +412,7 @@
             }
             
             try {
-                const response = await fetch(`/api/user/info?api_key=${encodeURIComponent(apiKey)}`);
+                const response = await apiRequest('/api/user/info');
                 if (response.ok) {
                     currentUser = await response.json();
                     userNameEl.innerText = currentUser.name || 'User';
@@ -450,7 +459,7 @@
         async function loadFeishuNotifyStatus() {
             if (!apiKey) return;
             try {
-                const response = await fetch(`/api/user/feishu-notify?api_key=${encodeURIComponent(apiKey)}`);
+                const response = await apiRequest('/api/user/feishu-notify');
                 if (response.ok) {
                     const data = await response.json();
                     feishuNotifyEnabled = data.enabled;
@@ -465,7 +474,7 @@
         async function toggleFeishuNotify() {
             if (!apiKey) return;
             try {
-                const response = await fetch(`/api/user/feishu-notify?api_key=${encodeURIComponent(apiKey)}`, {
+                const response = await apiRequest('/api/user/feishu-notify', {
                     method: 'POST',
                     headers: { 'Content-Type': 'application/json' },
                     body: JSON.stringify({ enabled: !feishuNotifyEnabled })
@@ -577,9 +586,8 @@
         // --- API & State ---
         async function poll() {
             try {
-                // 携带 api_key 参数（如果有的话）实现消息隔离
-                const pollUrl = apiKey ? `/api/poll?api_key=${encodeURIComponent(apiKey)}` : '/api/poll';
-                const response = await fetch(pollUrl);
+                // 使用 Authorization Header 实现消息隔离
+                const response = await apiRequest('/api/poll');
                 const newTasks = await response.json();
 
                 const oldIds = new Set(tasks.map(t => t.id));
