@@ -54,6 +54,17 @@ export const dismissTask = createAsyncThunk(
   }
 );
 
+/**
+ * 删除历史记录
+ */
+export const deleteHistory = createAsyncThunk(
+  'tasks/deleteHistory',
+  async (ids: string[]) => {
+    await api.post('/api/history/delete', { ids });
+    return ids;
+  }
+);
+
 export const tasksSlice = createSlice({
   name: 'tasks',
   initialState,
@@ -154,6 +165,16 @@ export const tasksSlice = createSlice({
         
         if (state.selectedTaskId === taskId) {
           state.selectedTaskId = state.pending[0]?.id ?? null;
+        }
+      })
+      
+      // deleteHistory
+      .addCase(deleteHistory.fulfilled, (state, action) => {
+        const deletedIds = new Set(action.payload);
+        state.history = state.history.filter((h) => !deletedIds.has(h.id));
+        
+        if (state.selectedHistoryId && deletedIds.has(state.selectedHistoryId)) {
+          state.selectedHistoryId = null;
         }
       });
   },
