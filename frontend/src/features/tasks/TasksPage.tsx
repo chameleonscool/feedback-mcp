@@ -13,6 +13,7 @@ import { clearAuth } from '@/features/auth/authSlice';
 import { Button, Card } from '@/components/ui';
 import { useNavigate } from 'react-router-dom';
 import ReactMarkdown from 'react-markdown';
+import remarkGfm from 'remark-gfm';
 
 export default function TasksPage() {
   const dispatch = useAppDispatch();
@@ -310,8 +311,8 @@ function TaskDetail({
       {/* Question - 可滚动 */}
       <Card className="mb-6 overflow-y-auto max-h-[50%]">
         <h3 className="text-sm font-medium text-slate-400 mb-2">📝 问题</h3>
-        <div className="prose prose-invert prose-sm max-w-none">
-          <ReactMarkdown>{task.question}</ReactMarkdown>
+        <div className="prose prose-invert prose-sm max-w-none prose-table:border prose-table:border-slate-600 prose-th:bg-slate-700 prose-th:p-2 prose-td:p-2 prose-td:border prose-td:border-slate-600">
+          <ReactMarkdown remarkPlugins={[remarkGfm]}>{task.question}</ReactMarkdown>
         </div>
 
         {task.image && (
@@ -387,8 +388,8 @@ function HistoryDetail({ item }: HistoryDetailProps) {
             </span>
           )}
         </div>
-        <div className="prose prose-invert prose-sm max-w-none">
-          <ReactMarkdown>{item.question}</ReactMarkdown>
+        <div className="prose prose-invert prose-sm max-w-none prose-table:border prose-table:border-slate-600 prose-th:bg-slate-700 prose-th:p-2 prose-td:p-2 prose-td:border prose-td:border-slate-600">
+          <ReactMarkdown remarkPlugins={[remarkGfm]}>{item.question}</ReactMarkdown>
         </div>
       </Card>
 
@@ -396,8 +397,8 @@ function HistoryDetail({ item }: HistoryDetailProps) {
       <Card className="flex-1 overflow-y-auto">
         <h3 className="text-sm font-medium text-slate-400 mb-2">💬 回复</h3>
         {item.answer ? (
-          <div className="prose prose-invert prose-sm max-w-none">
-            <ReactMarkdown>{item.answer}</ReactMarkdown>
+          <div className="prose prose-invert prose-sm max-w-none prose-table:border prose-table:border-slate-600 prose-th:bg-slate-700 prose-th:p-2 prose-td:p-2 prose-td:border prose-td:border-slate-600">
+            <ReactMarkdown remarkPlugins={[remarkGfm]}>{item.answer}</ReactMarkdown>
           </div>
         ) : (
           <p className="text-slate-500 italic">无回复</p>
