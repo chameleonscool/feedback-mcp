@@ -39,6 +39,8 @@ export const translations = {
     select_task_tip: "Select a task from the list to reply",
     your_reply: "Your Reply:",
     no_reply: "(No reply)",
+    sound_on: "Sound ON",
+    sound_off: "Sound OFF",
   },
   zh: {
     title: "AI 意图采集中心",
@@ -79,6 +81,8 @@ export const translations = {
     select_task_tip: "请从左侧列表选择一个任务进行回复",
     your_reply: "您的回复：",
     no_reply: "（无回复）",
+    sound_on: "铃声 ON",
+    sound_off: "铃声 OFF",
   },
 } as const;
 
