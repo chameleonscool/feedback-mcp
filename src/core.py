@@ -329,20 +329,24 @@ mcp = FastMCP("User Intent Bridge")
 @mcp.tool
 async def collect_user_intent(question: str) -> str | list:
     """
-    Send a message to the user and collect their intent or response.
-    
+    Send a message to the user and collect their response.
+
     This tool displays content in a web interface and waits for user input.
     Users can provide text responses and optionally attach images.
-    
+
+    IMPORTANT: This tool accepts ONLY the 'question' parameter.
+    Do NOT pass any other parameters such as 'intent', 'message', or 'prompt'.
+
     Use cases:
     - Request clarification on ambiguous requirements
     - Get approval before proceeding with changes
     - Collect additional context or preferences
     - Show progress and request next steps
-    
+
     Args:
         question: The message or question to present to the user.
-    
+                  This is the ONLY accepted parameter.
+
     Returns:
         User's response as text, or a list containing text and image data.
     """
